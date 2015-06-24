@@ -1,0 +1,201 @@
+body.node-type-event {
+	.image_detail_container {
+		.image_detail_elements {
+			.detail_elements {
+				.detail_body {
+					h2 {
+						color: @teal;				
+					}			
+				}
+			}			
+		}
+		
+		.register_link {
+			bottom: 10px;
+			position: absolute;
+			right: 15px;
+			text-align: right;
+		}
+	}
+	
+	.embedded_photo_gallery {
+		h3.with_borders {
+			border-top: 0;
+			border-bottom: 1px solid #444444;
+			margin-bottom: 20px;
+			color: @teal;
+		}
+		
+		.content {
+			.section {
+				padding: 0;
+				margin: 0;
+			}
+		}
+	}
+	
+	.event_info_columns {
+		.clearfix;
+		.main {
+			width: 520px;
+			float: left;
+		}
+	}
+	
+	.node-event{
+		div.section{
+			padding-bottom:0;	
+		}
+		div.wysiwyg.section.wysiwyg-processed{
+			padding-top:0;
+			padding-bottom:30px;
+		}
+	}
+
+	.bottom_content_container {
+		/* disabling inconsistent style */
+		/*h3 {
+			border-bottom: 1px solid #cccccc;
+			color: @teal;
+			font-weight: normal;
+			font-family: "DINMedium";
+			text-transform: uppercase;
+			font-size: 16px;
+			line-height: 24px;
+		
+		}*/
+		.bottom_content_elements {
+			padding: 15px 30px;
+		
+			.content {
+				margin-bottom: 30px;
+				.clearfix;
+				
+				.image {
+					float: left;
+					width: 146px;
+				}
+			
+				.body {
+					margin-left: 160px;
+					
+					h4 {
+						font-family: "DINMedium";
+						font-size: 18px;
+						color: #444444;
+						line-height: 22px;
+						margin-bottom: 10px
+					}
+				}
+			}
+		}
+	}	
+}
+
+
+/*
+	THIS IS TEMPORARY - these elements are not dynamic yet, and could change
+*/
+.events_list {
+	padding: 10px;
+	
+	.event {
+		padding-bottom: 10px;
+		border-bottom: 1px solid #a7a7a7;
+		margin-top: 10px;
+		.date {
+			width: 50px;
+			float: left;
+			color: #a7a7a7;
+			font-family: "DINBold";
+			font-size: 16px;
+		}
+		
+		.title {
+			margin-left: 50px;
+			line-height: 18px;
+			color: @teal;
+			a {
+			  text-decoration: none;
+			  :hover {
+			    text-decoration: underline;
+			  }
+			}
+		}
+	}
+	
+	.last {
+		border: 0;
+	}
+}
+
+.events_footer {
+	padding: 10px;
+	text-align: center;
+	
+	.see-all-link {
+		font-family: "DINMedium";
+		font-size: 12px;
+		text-decoration: none;
+		text-transform: uppercase;
+		color: #047892;
+		
+		.more_arrow {
+			color: #b3b5b5;
+		}
+	}
+}
+
+#wistar-event-registration-form {
+
+	#edit-salutation {
+		width: 85px!important;
+	}
+
+	#edit-first-name, #edit-last-name {
+		width: 240px!important;
+	}
+
+	#edit-address-type-wrapper {
+		margin-bottom: 1em;
+	}
+
+	#edit-address1-wrapper {
+		float: none;
+		clear: both;
+		margin-top: 1em;
+	}
+	
+	#edit-address2-wrapper {
+		margin-right: 1em!important;
+	}	
+
+	#edit-node-name-org-wrapper,
+	#edit-node-prof-title-wrapper {
+		width: 290px;
+		float: left;
+		
+		input {
+			width: 270px;
+		}
+	}
+	
+	#edit-node-prof-title-wrapper {
+		width: 275px;
+	}
+
+	#edit-node-phone-wrapper,
+	#edit-node-fax-wrapper {
+		width: 290px;
+		float: left;
+		
+		input {
+			width: 270px;
+		}
+	}
+	
+	#edit-node-fax-wrapper {
+		width: 275px;
+	}
+
+}

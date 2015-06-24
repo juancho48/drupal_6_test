@@ -1,0 +1,4 @@
+name = "Wistar Event"
+description = "Wistar event system"
+package = "Wistar"
+core = 6.x

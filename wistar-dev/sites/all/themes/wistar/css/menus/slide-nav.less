@@ -1,0 +1,119 @@
+#slide_nav_container {
+	/* needs to live outside the entire layout
+	   because it needs to slide the page (incl background) */
+	background: url('../../images/layout/slide_menu_bg.jpg') transparent 0 0 repeat-x;
+	.clearfix;
+	
+	#slide_nav_elements {
+		padding: 10px;
+		height: 180px;
+		margin-top: -200px;
+		
+		.slide_nav_menu {
+			width: @site_width - 60px;
+			display: none;
+			margin: 0 auto;
+			height: 180px;
+			border-left: 2px solid #0f5a82;
+			
+			ul {
+				width: 235px;
+				float: left;
+			
+				li {
+					margin-left: 15px;
+					list-style-type: none;
+					list-style-image: none;					
+					float: left;
+					width: 214px;
+					
+					a {
+						color: #FEFFFF;
+						font-size: 12px;
+						text-decoration: none;
+						font-family: 'Verdana';
+						line-height: 20px;
+						display: block;
+					}
+				}
+				
+				li.expanded, li.leaf {
+					list-style-type: none;
+					list-style-image: none;				
+				}
+			}
+
+		}
+	}
+}
+
+#slide_nav_tabs_container {
+	.clearfix;
+
+	#slide_nav_tabs_elements {
+		.clearfix;
+
+		#slide_nav_tabs {
+			font-family: "Verdana";
+			
+			li.tab {
+				height: 27px;
+				text-align: center;
+				float: left;
+				border: 3px solid @blue;
+				border-top: 0;
+				background: #124f87;
+				
+				a {
+					line-height: 27px;
+					display: block;
+					color: #FFFFFF;
+					text-decoration: none;
+					span.close {
+						display: none;
+					}				
+					
+					:hover {
+						background: #1B6C95;
+						border-color: #1B6C95;
+					}
+				}
+			}
+
+			.active_tab {
+				border: 0;
+				height: 35px;
+				background: #1B6C95;
+				
+				a {
+					line-height: 35px;
+					span.close {
+						display: inline;
+						color: #9fba42;
+						font-weight: bold;						
+					}				
+				}			
+			}
+			
+			
+			#find_a_scientist {
+				width: 131px;
+				border-right: 1px solid #1756a2;
+			}
+						
+			#technology_transfer {
+				width: 156px;
+				border-left: 1px solid @blue;
+			}
+		
+			#find_a_scientist.active {
+				.active_tab;
+			}
+						
+			#technology_transfer.active {
+				.active_tab;
+			}
+			
+		}
+	}
+}

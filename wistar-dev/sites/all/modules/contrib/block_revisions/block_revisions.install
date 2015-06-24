@@ -1,0 +1,118 @@
+<?php
+// $Id: block_revisions.install,v 1.1.2.3 2010/03/23 06:53:07 mrbaileys Exp $
+
+/**
+ * @file
+ * Installation routines for the Block Revisions module.
+ */
+
+/**
+ * @todo: populate the boxes_revisions table with current revisions upon installation.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function block_revisions_schema() {
+  $schema['boxes_revisions'] = array(
+    'description' => 'Stores the revision history of content for custom-made blocks.',
+    'fields' => array(
+      'brid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => "A unique id for this revision.",
+      ),
+      'bid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => "The block's {blocks}.bid.",
+      ),
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => "The revision id.",
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that created this version.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'body' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Block contents.',
+      ),
+      'format' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => FALSE,
+        'default' => 0,
+        'description' => "Block body's {filter_formats}.format; for example, 1 = Filtered HTML.",
+      ),
+      'log' => array(
+        'description' => 'The log entry explaining the changes in this version.',
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'big'
+      ),
+      'timestamp' => array(
+        'description' => 'A Unix timestamp indicating when this version was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+    ),
+    'unique keys' => array('revision' => array('bid', 'vid')),
+    'primary key' => array('brid'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_schema_alter().
+ *
+ * Alters the schema for the {boxes} table, adding two extra columns.
+ */
+function block_revisions_schema_alter(&$schema) {
+  $schema['boxes']['fields']['uid'] = array(
+    'description' => 'The {users}.uid of the user that created or updated this block.',
+    'type' => 'int',
+    'not null' => FALSE,
+  );
+  $schema['boxes']['fields']['timestamp'] = array(
+    'description' => 'A Unix timestamp indicating when this block was last updated.',
+    'type' => 'int',
+    'not null' => FALSE,
+  );
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function block_revisions_install() {
+  $ret = array();
+  db_add_field($ret, 'boxes', 'uid', array('description' => 'The {users}.uid of the user that created or updated this block.', 'type' => 'int', 'not null' => FALSE));
+  db_add_field($ret, 'boxes', 'timestamp', array('description' => 'A Unix timestamp indicating when this block was last updated.', 'type' => 'int', 'not null' => FALSE));
+
+  drupal_install_schema('block_revisions');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function block_revisions_uninstall() {
+  $ret = array();
+  db_drop_field($ret, 'boxes', 'uid');
+  db_drop_field($ret, 'boxes', 'timestamp');
+
+  drupal_uninstall_schema('block_revisions');
+
+  // Clean up the variables set/used by this module.
+  variable_del('block_revisions_revision_default');
+}

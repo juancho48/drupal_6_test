@@ -1,0 +1,4 @@
+name = "Wistar Donation Form"
+description = "Creates and handles submissions of Wistar Donation Form"
+package = "Wistar"
+core = 6.x

@@ -1,0 +1,109 @@
+@import 'wysiwyg.less';
+
+body {
+	font-size: 12px;
+	font-family: "Verdana";
+	
+	a {
+		color: @teal;
+	}
+	
+	i {
+		font-style: italic;
+	}
+	
+	strong {
+		font-weight: bold;
+	}
+	
+	h1, h2, h3, h4, h5, h6 {
+		font-family: "DINMedium";
+	}
+	
+	.section_title {
+		font-size: 16px;
+	}
+	
+	.with_borders {
+		margin: 2px;
+		color: @heading_gray;
+		text-transform: uppercase;
+		font-size: 14px;
+		padding: 7px 20px;
+		border-top: 3px solid @teal;				
+		border-bottom: 1px solid #CCCCCC;
+		
+		a {
+			color: @heading_gray;
+			text-transform: uppercase;
+			text-decoration: none;
+		}		
+	}
+	
+	.more {
+		color: #FFFFFF;
+		text-decoration: none;
+		font-size: 12px;
+		text-transform: uppercase;
+		font-family: "DINMedium";
+	}
+	
+	.more_heading {
+		.more;
+		text-transform: uppercase;
+		font-size: 11px;
+	}
+	
+	ul, ul.links, ul.menu {
+		li, li.leaf {
+			list-style: none;
+			list-style-image: none;
+		}
+	}
+
+	.social {
+		.facebook {
+			background: url('../images/icons/facebook.jpg') #15202f 6px 6px no-repeat;
+		}
+
+		.twitter {
+			background: url('../images/icons/twitter.jpg') #15202f 6px 6px no-repeat;
+		}
+
+		.flickr {
+			background: url('../images/icons/flickr.jpg') #15202f 6px 6px no-repeat;
+		}
+
+		.vimeo {
+			background: url('../images/icons/vimeo.jpg') #15202f 6px 6px no-repeat;		
+		}	
+		
+		.youtube {
+			background: url('../images/icons/youtube.png') #15202f 6px 6px no-repeat;		
+		}
+		.rss{
+			background: url('../images/icons/rss.png') #15202f 6px 6px no-repeat;
+		}
+	}
+
+	.icon_link_list {
+		margin-top: 5px;
+	
+		li {
+			padding-left: 28px;
+			margin-bottom: 1px;
+			font-size: 14px;
+			font-family: "DINMedium";
+						
+			a {
+				color: #FFFFFF;
+				text-decoration: none;
+				padding: 8px;
+				display: block;
+				border-left: 1px solid #0E141B;
+			}
+		}
+		
+		.social;
+	}	
+}

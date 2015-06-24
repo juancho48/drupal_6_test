@@ -1,0 +1,4 @@
+name = "Wistar Timeline"
+description = "Wistar interactive timeline"
+package = "Wistar"
+core = 6.x

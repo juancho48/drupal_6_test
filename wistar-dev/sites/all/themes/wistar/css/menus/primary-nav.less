@@ -1,0 +1,191 @@
+/*
+	There are a lot of very specific units in place here, mostly for 
+	precise rendering but also for cross-browser support.
+	-- MD 2011	
+*/
+#primary_nav_container {
+	.clearfix;
+	z-index: 10;
+	position: absolute;
+	bottom: 1px;
+	
+	#primary_nav {
+		position: relative;
+		z-index: 10;
+			
+		li.menu_tab {
+			background: url('../../images/layout/main_nav_item_bg.jpg') #FFFFFF 0 0 no-repeat;
+			height: 62px;
+			width: 151px;
+			padding: 0 3px 0 4px;		
+			text-align: center;
+			float: left;
+			z-index: 10;
+
+			a.menu_anchor {
+				color: #111824;
+				text-decoration: none;
+				font-family: "DINMedium";
+				font-size: 17px;
+				display: block;
+				height: 47px;
+				line-height: 47px;
+				
+				/* set up the borders for coloring */
+				border-top-style: solid;
+				border-top-width: 10px;
+				border-top-color: #FFFFFF;
+				border-bottom-style: solid;
+				border-bottom-width: 5px;
+			}
+
+			ul.submenu {
+				.clearfix;
+				background: #FFFFFF;
+				width: 535px;
+				text-align: left;
+				display: none;
+				box-shadow: 2px 4px 4px #8F8F8F; 
+				-moz-box-shadow: 2px 4px 4px #8F8F8F; 
+				-webkit-box-shadow: 2px 4px 4px #8F8F8F; 
+				
+				li.column_container {					
+
+					.clearfix;
+					width: 535px;
+
+					div.left {
+						background: #ECECEC;
+						width: 200px;
+						padding: 5px 15px 15px 15px;							
+						float: left;
+						min-height: 150px;
+						
+						a.menu_link {
+							display: block;
+							width: 200px;
+							margin-top: 10px;
+							text-decoration: none;
+							
+							img {
+								margin: 0;
+								padding: 0;
+								border: 0;
+								display: block;
+							}
+							
+							div.menu_link_title {
+								padding: 10px;
+								background: #111924;
+								color: #FFFFFF;
+								font-size: 13px;
+								font-family: "DINMedium";
+							}
+						}
+					}
+
+					div.right {
+						background: #FFFFFF;
+						width: 265px;
+						padding: 5px 20px 15px 20px;							
+						float: left;
+						
+						img {
+							margin-bottom: 20px;
+						}
+						
+						.links {
+							margin-top: 10px;
+							
+							.menu_link {
+								display: block;
+								font-size: 15px;
+								line-height: 25px;
+								margin-bottom: 10px;
+								padding-left: 16px;
+								font-family: "DINMedium";
+								color: #111924;
+								text-decoration: none;
+							}												
+						}
+					}
+				}
+			}		
+		}
+		
+		li.menu_tab {
+			:hover {
+				a.menu_anchor {
+					background: url('../../images/layout/main_nav_tab_bg.jpg') #FFFFFF left bottom repeat-x;
+					font-size: 17px;
+				}				
+			}
+		}
+		
+		/* coloring */
+		.colorize(@_color) {
+			h3 {			
+				color: @_color;				
+				text-transform: uppercase;
+				font-family: "DINBold";
+				font-size: 12px;
+				margin-top: 10px;
+				border-top: 3px solid @_color;
+				padding: 2px 0;
+			}
+			
+			a.menu_anchor {
+				border-bottom-color: #DDDDDD;
+			}
+			
+			ul.submenu {				
+				li.column_container {					
+					div.right {
+						.menu_link {
+						}
+					}
+				}
+			}			
+
+			:hover {
+				a {
+					border-top-color: @_color;
+					border-bottom-color: #ededed;
+				}
+			}
+		}
+		
+		li.the_institute {
+			width: 148px;
+			.colorize(@blue);	
+			
+			div.right {
+				.menu_link {
+					background: url('../../images/icons/menu_plus_blue.jpg') 0 8px no-repeat;				
+				}
+			}	
+		}
+
+		li.our_science {
+			width: 141px;
+			.colorize(@lime);		
+
+			div.right {
+				.menu_link {
+					background: url('../../images/icons/menu_plus_green.jpg') 0 8px no-repeat;				
+				}
+			}	
+		}
+
+		li.wistar_today {
+			width: 149px;
+			.colorize(@orange);
+
+			div.right {
+				.menu_link {
+					background: url('../../images/icons/menu_plus_orange.jpg') 0 8px no-repeat;				
+				}
+			}	
+		}
+	}
+}

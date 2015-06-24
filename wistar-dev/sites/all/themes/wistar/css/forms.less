@@ -1,0 +1,492 @@
+form {
+	textarea {
+		overflow-x: hidden;
+		overflow-y: auto;
+	}	
+}
+
+.progress {
+	.clearfix;
+	margin-bottom: 40px;
+	.page {
+		float: left;
+		color: #fff;
+		background-color: #dbdbdb;
+		background-repeat: no-repeat;
+		background-position: right top;			
+		background-image: url(../images/layout/form_page_header.jpg);						
+		font-family: 'DINMedium';
+		font-size: 14px;
+		height: 33px;
+		line-height: 33px;
+		text-transform: uppercase;
+		padding: 0 20px;
+		width: 352px;
+	}
+	.active {
+		background-color: @teal;
+		background-image: url(../images/layout/form_page_header_active.jpg);
+	}		
+	.last {
+		background-image: none;
+		padding-right: 0;
+	}	
+}
+
+#init-give-forms {
+	display:none;
+	height:0;
+	line-height:0;
+}
+
+#node-1047, #node-1484, #node-1485 {
+	h2.messages-label {
+		display: none;
+	}
+	div.messages {
+		margin: 0 0 20px;
+		ul {
+			margin-bottom: 0;
+			border-left: none;
+		}
+	}
+}
+
+#wistar-donation-billing-form, .submit-webform, #wistar-donation-payment-form, #wistar-event-registration-form, #wistar-donation-billing-giving-in-memory-form, #wistar-donation-billing-research-form {
+	.clearfix;
+	width: 766px;
+
+	a.more.donation{
+		color:#047892;
+	}
+	
+	.form-progress {
+		.progress
+	}
+	fieldset {
+		.clearfix;
+		legend {	
+			display: block;
+			float: left;
+			color: @teal;
+			font-family: "DINMedium";			
+			font-size: 15px;
+			line-height: 18px;
+			margin: 1em 0;
+			text-transform: uppercase;
+		}		
+	}	
+	.form-items, .webform-component {
+		.clearfix;
+		width: 605px;
+		float: right;		
+		.form-item {
+			float: left;
+			position: relative;
+			margin: 1em 0 0;
+			label {
+				font-weight: normal;
+				font-style: italic;
+				color: #7c7871;
+				font-size: 13px;
+				position: absolute;
+				top: 10px;
+				left: 10px;	
+			}			
+		}
+		.form-text, select, textarea {
+			border: 2px solid #e7e7e7;
+		}			
+		.form-text, select {
+			width: 288px;
+			margin-right: 8px;			
+		}				
+		.form-text {
+			height: 30px;
+			line-height: 30px;
+		}
+		select {
+			padding: 6px;
+			height: 36px;
+			line-height: 28px;
+			background: none;
+			width: 294px;
+		}				
+		textarea {
+			width: 592px;
+			height: 144px;
+		}
+		#edit-amount-field-wrapper {
+			width: 390px;
+			
+			
+			label {
+				position: absolute;
+			}
+		}
+	}
+	.form-items.form-radios-wrapper {
+		div.form-radios {
+			margin:0;
+			
+			#edit-amount-custom-wrapper{
+				clear:left;
+			}
+		}
+		label {
+			position: static;
+		}
+	}
+	
+	.form-items {
+		#edit-email, #edit-phone{
+			width: 242px;
+		}
+		#edit-middle-initial-wrapper {
+			label {
+				top: 4px;
+				height:5px;
+				width:5px;
+			}
+			#edit-middle-initial {
+				width: 78px;
+			}
+		}
+		#edit-phone-type, #edit-name-title, #edit-name-suffix {
+			width: 82px;
+		}
+		#edit-program, #edit-lab {
+			width: 245px !important;
+		}
+		#edit-or-wrapper {
+			height: 30px;
+			line-height: 30px;
+			margin-right: 8px;
+			width: 82px;
+			text-align:center;
+			vertical-align:middle;
+			padding:2px;
+		}
+		#edit-anonymous-wrapper {
+			clear: both;
+			label {
+				position: static;
+				left: 0;
+				top: 0;
+			}
+		}
+		#edit-amount-field-wrapper{
+			width:auto;
+			margin: 5px 0 0 20px;
+		}
+	}
+	.donation-form-items {
+		#edit-amount , #edit-amount-1{
+			width: 150px;
+		}	
+		#edit-purpose-wrapper, #edit-info-send-wrapper {
+			.clearfix;
+			label, input, select {
+				float: left;
+			}
+			label {				
+				font-style: normal;	
+				position: relative;
+				line-height: 32px;
+				left: 0;
+				top: 0;
+				margin-right: 8px;
+			}
+		}
+		#edit-info-send {
+			margin: 11px 4px;
+		}
+	}	
+	#edit-purpose-wrapper {
+		float: right;
+		#edit-purpose {
+			width: 299px;
+			margin-right: 1px;
+		}		
+	}
+	#edit-info-wrapper {
+		float: right;
+		#edit-info {	
+			width: 345px;
+			margin-right: 1px;	
+		}			
+	}
+	.form-submit {
+		color: @heading_gray;
+		font-family: 'DINBold';
+		font-size: 14px;
+		text-transform: uppercase;
+		border: none;
+		background: #eee;
+		padding: 5px 10px;
+		float: right;
+		margin-top: 2em;
+		cursor: pointer;
+	}
+	.amount_label {
+    	left: 180px;
+    	position: absolute;
+    	top: 45px;
+		color: #7C7871;
+	}
+	.billing-form-items{
+		position:relative;
+	}
+	.description {
+	    clear: both;
+	    color: #7C7871;
+	    font-size: 11px;
+	    line-height: 20px;
+	}
+	
+	
+	#edit-namedonor-wrapper label{
+		color: #7C7871;
+	    font-size: 13px;
+	    font-style: italic;
+	    font-weight: normal;
+	    left: 10px;
+	    position: absolute;
+	    top: 10px;
+	}
+}
+
+#node-1688{
+	.amount_label {
+    	left: 180px;
+    	position: absolute;
+    	top: 70px;
+	}
+}
+
+#edit-program-other-wrapper {
+	display:none;
+}
+
+#wistar-donation-payment-form {
+	.form-items {
+		width: 560px;
+	}
+	
+	#edit-cvv2 {
+		width: 75px;
+	}
+}
+
+#wistar-event-registration-form {
+	.ticket-selector {
+		margin-bottom: 20px;
+		
+		legend {
+			margin: 0;
+		}
+		
+		fieldset.form-ticket {
+			position:relative;
+			
+			.form-item {
+				float: left;
+				margin: 1em 0 0;
+				position: relative;
+				
+				label {
+					color: #7C7871;
+					font-size: 13px;
+					font-style: italic;
+					font-weight: normal;
+					left: 10px;
+					position: absolute;
+					top: 10px;
+				}
+				
+				.form-select {
+					background: #fff;
+					border: 2px solid #e7e7e7;
+					height: 36px;
+					line-height: 28px;
+					margin-right: 8px;
+					padding: 6px;
+					width: 294px;
+				}
+				
+				#edit-quantity {
+					width: 78px;
+					text-align: center;
+				}
+				
+				.form-text {
+					border: 2px solid #e7e7e7;
+					height: 30px;
+					line-height: 30px;
+					margin-right: 8px;
+					width: 290px;
+				}
+			}
+			
+			#edit-quantity-qty {
+				line-height:36px;
+				height:36px;
+			}
+		}
+	}
+	
+	.ticket-descriptions {
+		clear:both;
+		padding-top:10px;
+	}
+	
+	.ticket-description-wrapper {
+		cursor: pointer;
+		margin-bottom: 10px;
+		padding: 10px;					
+	}
+	
+	.ticket-description-wrapper.selected {
+		background: none repeat scroll 0 0 #EFEFEF;
+		padding: 10px;			
+	}
+
+	fieldset {
+		legend {
+			float: none;
+			margin: 0;
+		}
+	}
+	
+	.form-items {
+		float: left;
+		margin-bottom: 20px;
+	}
+	
+	#edit-state-wrapper{
+		display:block !important;
+	}
+}
+
+body.confirmation-payment #main_content{
+	overflow:hidden;	
+}
+
+#wistar-donation-confirmation-page{
+	line-height:16px;
+	position:relative;
+	
+	legend{
+		margin-bottom:10px;	
+	}	
+	
+	.form-text{
+		border: 2px solid #E7E7E7;
+	    height: 30px;
+	    line-height: 30px;
+	    margin-right: 8px;
+	    width: 295px;
+		margin-left:180px;	
+		padding:0 5px;
+	}
+	.form-item{
+	    margin: 1em 0 0;
+	    position: relative;
+	}
+	
+	.form-item label{
+		color: #7C7871;
+	    font-size: 13px;
+	    font-style: italic;
+	    font-weight: normal;
+	    left: 10px;
+	    position: absolute;
+	    top: 10px;	
+	}
+	
+	.text1{
+		font-weight: bold;
+		margin:20px 0;
+	}
+	.text2{
+		font-style:italic;
+		margin:20px 0;
+	}
+	.text3{
+		font-size:12px;
+		margin:20px 0;
+	}
+	
+	#edit-submit,#edit-cancel{
+	    border: medium none;
+	    color: #404040;
+	    font-family: 'DINBold';
+	    font-size: 14px;
+	    margin-top: 2em;
+	    padding: 5px 10px;
+	    text-transform: uppercase;
+		cursor:pointer;	
+		background:#EEEEEE;
+		margin-right:30px;
+	}
+	div.billing-form-items,#edit-lab-wrapper{
+		margin-bottom:40px;
+	}
+	
+	#edit-state,select.form-select{
+		width: auto;
+		background: #ffffff;
+	    border: 2px solid #E7E7E7;
+	    height: 36px;
+	    line-height: 28px;
+	    margin-right: 8px;
+	    padding: 6px;
+		margin-left:180px;
+	}
+	#edit-program-other-wrapper{
+		position:absolute;
+		right:0;
+		top:27px;
+		width:240px;
+		
+		label{
+			display:none;	
+		}	
+		input{
+			width: 240px;
+			margin:0;
+		}
+	}
+}
+
+.submit-webform{
+	width:auto;
+}
+.wysiwyg form .webform-component{
+	float: left;
+	width: auto;
+}
+.wysiwyg form{
+	margin-top:7px;
+}
+.wysiwyg form #edit-actions{
+	float: left;
+	margin: -2px 0px 23px 0px;
+	width: 100%;
+}
+.wysiwyg form .webform-component textarea{
+	width: 584px;
+	max-width:584px;
+}
+
+#edit-or-wrapper span{
+	color:red;
+}
+
+body.give-to-an-area-of-research div.messages,body.confirmation div.messages,body.give-today--in-honor-or-memory div.messages{
+	margin-bottom:20px;	
+}
+
+body.confirmation #featured_image,body.confirmation #quicklinks{
+	display:none;	
+}

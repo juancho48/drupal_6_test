@@ -1,0 +1,15 @@
+diff --git a/includes/common.inc b/includes/common.inc
+index 5b250da..5481c7a 100644
+--- a/includes/common.inc
++++ b/includes/common.inc
+@@ -2489,6 +2489,10 @@ function drupal_clear_js_cache() {
+  * We use HTML-safe strings, i.e. with <, > and & escaped.
+  */
+ function drupal_to_js($var) {
++  if(function_exists('json_encode')) {
++    return str_replace(array('<', '>', '&'), array('\u003c', '\u003e', '\u0026'), json_encode($var));
++  }
++
+   switch (gettype($var)) {
+     case 'boolean':
+       return $var ? 'true' : 'false'; // Lowercase necessary!

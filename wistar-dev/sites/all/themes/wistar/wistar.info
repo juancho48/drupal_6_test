@@ -1,0 +1,32 @@
+name = Wistar
+description = 'Wistar: Design by Bluecadet - Development by Context'
+version = 1.0
+core = 6.x
+engine = phptemplate
+
+scripts[] = "js/plugins/hoverIntent.js"
+scripts[] = "js/plugins/supersubs.js"
+scripts[] = "js/plugins/superfish.js"
+scripts[] = "js/plugins/jquery.slidingtab.js"
+scripts[] = "js/plugins/jquery.easing.js"
+scripts[] = "js/plugins/jquery.cycle.js"
+scripts[] = "js/plugins/jquery.jcarousellite.js"
+scripts[] = "js/plugins/jquery.jbar.js"
+scripts[] = "js/plugins/jquery.infieldlabel.js"
+scripts[] = "js/plugins/jquery.numberMask.js"
+scripts[] = "js/plugins/jquery.cookie.js"
+scripts[] = "js/expandable-list.js"
+scripts[] = "js/plugins/jquery.fancybox-1.3.4.js"
+scripts[] = "js/application.js"
+scripts[] = "js/main.js"
+
+stylesheets[all][] = css/fancybox.css
+stylesheets[screen][] 	= "css/master.less"
+stylesheets[print][] 	= "css/print.less"
+
+regions[left] 			= Left sidebar
+regions[right] 			= Right sidebar
+regions[content] 		= Content
+regions[header] 		= Header
+regions[footer] 		= Footer
+regions[content_blocks] = Content Blocks

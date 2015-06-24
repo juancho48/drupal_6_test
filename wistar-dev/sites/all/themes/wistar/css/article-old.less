@@ -1,0 +1,390 @@
+div.node-article-page {
+	
+	.section {
+		overflow: hidden;
+		
+		.article-share {
+			float:left;
+			width:100%;
+			
+			.post_share {
+				float: left;
+				margin-top: 0;
+				width: 140px;
+				
+				ul {
+					padding:0;
+					border-left: none;
+					
+					li {
+						margin-bottom: 0;
+					}
+				}
+			}
+		}
+	}
+	
+	#content {
+		width: 474px;
+		float: left;
+		
+		h1.page-title {
+			color: #f39000;
+			font-family: "Verdana";
+			font-size: 20px;
+			line-height: 20px;
+			margin: 0;
+			padding:10px 0 0 0;
+		}
+		
+		h2.subtitle {
+			color:#9b9b9a;
+			margin: 0;
+			padding: 0;
+			font-size: 15px;
+			line-height: 20px;
+			font-family: "Verdana";
+		}
+		
+		h2 {
+			color: #000;
+		}
+		
+		.witten-by {
+			padding:21px 0 0 0;
+			color: #047891;
+			
+			label {
+				color: #a7a7a7;
+			}
+		}
+		
+		.content {
+			padding: 55px 0 0 0;
+		}
+		
+		blockquote {
+			color: #b2b2b2;
+			font-size: 22px;
+			font-style: italic;
+			line-height: 30px;
+			
+			p {
+				color: #b2b2b2;
+				font-size: 22px;
+				font-style: italic;
+				line-height: 30px;
+			}
+		}
+		
+		img {
+			max-width: 474px;
+			height: auto;
+		}
+		
+		a {
+			text-decoration: none;
+			color: #db8200;
+		}
+		
+		.image-holder {
+			padding: 15px 0 15px 0;
+			
+			span {
+				display:block;
+				font-family: "Verdana";
+				font-size: 12px;
+				font-style: italic;
+				color: #b2b2b2;
+				line-height: 16px;
+			}
+		}
+	}
+	
+	#sidebar {
+		width: 242px;
+		float: right;
+		
+		.scientist {
+			padding: 5px 32px 0 0;
+			
+			h2 {
+				font-size: 12px;
+				font-family: "Verdana";
+				color: #444444;
+				padding: 0 0 5px 0;
+				margin: 0;
+				font-weight: bold;
+			}
+			
+			.views-row {
+				padding:0 0 11px 2px;
+				overflow: hidden;
+				border-top: 2px solid #db8200;
+				
+				a {
+					padding-right:13px;
+					font-weight: 700;
+					color: #db8200;
+					float: left;
+					clear: left;
+					background-image: url(../images/layout/breadcrumb_divider.png);
+					background-position: 100% 3px;
+					background-repeat: no-repeat;
+					font-size: 11px;
+					line-height: 15px;
+					text-transform: uppercase;
+					text-decoration: none;
+					font-family: "DINMedium";
+				}
+			}
+		}
+		
+		.terms {
+			padding: 23px 0 0 0;
+			color: #db8200;
+			line-height: 14px;
+			
+			span {
+				font-size: 12px;
+				font-family: "Verdana";
+				color: #444444;
+			}
+			
+			.term {
+				color: #b3b5b5;
+				
+				a {
+					color: #db8200;
+					text-decoration: none;
+				}
+			}
+		}
+		
+		.testimonials {
+			padding: 60px 0 0;
+			font-family: "DINMedium";
+			
+			.body {
+				line-height: 30px;
+				font-size: 22px;
+				font-style: italic;
+				color: #b2b2b2;
+			}
+			
+			.name {
+				font-size: 14px;
+				color: #191a1f;
+				margin: 15px 0 0 0;
+			}
+		}
+	}
+}
+.view-article{	
+	#edit-preview {
+		display: none;
+	}
+
+	.attachment-before {
+		float: right;
+		width: 235px;
+		background:#fff;
+
+		h2 {
+
+			color: @heading_gray;
+			text-transform: uppercase;
+			font-size: 16px;
+			padding: 7px 0;
+			border-top: 3px solid @orange;				
+			border-bottom: 1px solid #efefef;		
+			margin-bottom: 20px;
+		}
+		
+		.view-content {
+			width: 235px;
+			margin-bottom: 20px;
+			
+			li {
+				list-style-type: none;
+				list-style-image: none;
+				padding: 0;
+				margin: 0;
+				line-height: 20px;
+				font-size: 12px; 
+				color: #888888;
+				font-family: "DINMedium";
+			
+				a {
+					text-decoration: none;
+					color: @orange;
+					font-size: 13px;
+
+					:hover {
+						text-decoration: underline;
+					}
+				}
+			}		
+		}
+	}
+	
+	.view-content {	
+		.views-row {
+			margin-bottom: 50px;
+			width:500px;
+			
+			.views-field-title {
+				font-size: 21px;
+				color: @dark_blue;
+				text-transform: uppercase;
+				line-height: 26px;
+				border-bottom: 1px solid #efefef;
+				margin-bottom: 5px;
+				padding-bottom: 7px;
+				
+				a {
+					text-decoration: none;	
+					color: @dark_blue;
+				}
+			}
+	
+			.meta {
+				color: #a6a6a6;
+				line-height: 16px;
+				font-size: 12px;
+			}
+	
+			.views-field-field-article-subtitle-value{
+				color: #9B9B9A;
+				font-family: "Verdana";
+				font-size: 15px;
+				line-height: 20px;
+				margin: 0;
+				padding: 0;
+			}
+			.views-field-name {
+				.meta;
+				font-size: 13px;
+				margin-bottom: 25px;
+		
+				span {
+					color: @teal;
+				}
+			}
+			
+			.views-field-field-article-witten-by-value{
+				color: #047891;
+				padding:11px 0 0;
+			}
+			.views-field-field-article-witten-by-value label{
+				color:#A7A7A7;
+			}
+			.view-field-field-post-image {
+				margin-bottom: 20px;
+			}
+	
+			.views-field-teaser{
+				padding:15px 0 0;
+				color: #404040;
+				font-size: 13px;
+				line-height: 18px;
+				
+			}
+			.views-field-teaser p{
+				margin-bottom: 20px;
+			}
+			.views-field-view-node {
+				font-size: 13px;
+				line-height: 18px;
+				margin-bottom: 10px;
+			
+				span {
+					color: @orange;
+					font-family: "DINBold";
+					:after {
+						content: ' >';
+					}
+					a {
+						text-transform: uppercase;
+						color: #000000;
+						text-decoration: none;
+					}	
+				}		
+			}
+		}	
+		
+		.views-field-tid {
+			color: #a6a6a6;
+			font-size: 13px;
+			a {
+				color: @orange;
+				text-decoration: none;
+			}
+		}		
+	}
+	
+	.pagination {
+		position: relative;
+		div {
+			width: 200px;
+			position: absolute;
+			
+			a {
+				font-size: 14px;
+				text-transform: uppercase;
+				color: #000000;
+				display: block;
+				font-family: "DINMedium";
+				text-decoration: none;
+			
+				.more_arrow {
+					color: @teal;
+				}
+			}
+		}
+		
+		.prev {
+			left: 0;
+		}
+
+		.next {
+			text-align: right; 
+			right: 0;
+		}
+	}
+	
+	.pager {
+		.clearfix;
+		border-top: 1px solid #efefef;
+		position: relative;
+		color: #a6a6a6;
+		width:500px;
+		font-family: "DINBold";
+		text-transform: uppercase;
+		padding: 10px 0;
+		font-size: 13px;
+	
+		a {
+			color: @orange;
+			text-decoration: none;
+			font-family: "Verdana";
+			font-size: 15px;
+		}
+
+		.pager-current {
+			font-weight: normal;
+		}
+
+		.pager-previous {
+			float: left;
+			margin: 0;
+			padding: 0;
+		}
+	
+		.pager-next {
+			float: right;
+			margin: 0;
+			padding: 0;
+		}
+	}
+}

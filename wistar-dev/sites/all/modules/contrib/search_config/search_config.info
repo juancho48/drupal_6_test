@@ -1,0 +1,12 @@
+name = Search config
+description = Configure display of the advanced search form
+dependencies[] = search
+package = Search
+core = 6.x
+
+; Information added by drupal.org packaging script on 2011-02-25
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "search_config"
+datestamp = "1298620133"
+

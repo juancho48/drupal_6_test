@@ -1,0 +1,8 @@
+name = Microsite
+description = 'Wistar: Lab Microsite'
+base theme = wistar
+version = 1.0
+core = 6.x
+engine = phptemplate
+
+scripts[] = "js/microsite.js"

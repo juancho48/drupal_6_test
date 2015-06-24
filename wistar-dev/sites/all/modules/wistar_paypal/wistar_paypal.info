@@ -1,0 +1,4 @@
+name = "Wistar Paypal"
+description = "Paypal Standard and IPN implementation for Wistar"
+package = "Wistar"
+core = 6.x

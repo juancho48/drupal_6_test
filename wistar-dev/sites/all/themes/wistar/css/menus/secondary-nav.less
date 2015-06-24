@@ -1,0 +1,102 @@
+.secondary_nav {
+	> ul {
+		height: 30px;
+		background: url('../../images/layout/secondary_nav_item_bg.jpg') transparent 0 0 repeat-x;
+		width: 460px;	
+		
+		> li {
+			background: url('../../images/layout/secondary_nav_item_border.jpg') transparent 0 0 no-repeat;
+			margin: 0;
+			text-align: left;
+			float: left;
+			position: relative;
+			
+			:hover {
+
+				> a {
+					background: url('../../images/layout/secondary_nav_top_bg.jpg') repeat-x scroll 0 0 #047891;
+					border-right: 2px solid #3d434c;
+					border-left: 2px solid #3d434c;								
+					padding: 0 9px;
+					padding-right: 22px;		
+					color: #FFFFFF;
+				}
+			}
+
+			> a {
+				background: url('../../images/icons/grey_arrow_down.png') transparent 96% 50% no-repeat;
+				color: #114c84;
+				text-decoration: none;
+				height: 30px;
+				padding: 0 11px;						
+				line-height: 30px;
+				white-space: nowrap;
+				padding-right: 24px;
+				display: block;
+			}
+
+			ul {
+				.clearfix;
+				background: url('../../images/layout/secondary_nav_bg.png') transparent right center;
+				text-align: left;
+				display: none;
+				position: absolute;
+				width: 300px;
+				border-bottom: 2px solid #3d434c;
+				z-index: 11;
+				
+				li {
+					border: 2px solid #3d434c;
+					border-bottom: 0;
+					
+					a {
+						display: block;
+						font-family: "DINBold";
+						padding: 4px 7px;	
+						color: #FFFFFF;
+						text-transform: uppercase;
+						text-decoration: none;
+						
+						:hover {
+							text-decoration: none;
+						}
+					}
+					
+					:hover {
+						background: rgba(255,255,255,0.2);
+					}
+					
+					> ul {
+						display: none!important;
+					}
+				}		
+				
+				li.leaf, li.expanded, li.collapsed {
+					margin: 0;		
+					padding: 5px 7px;
+					list-style-type: none;
+					list-style-image: none;
+				}
+			}
+		}
+		
+		li.leaf, li.expanded, li.collapsed {
+			margin: 0;		
+			padding: 0;
+			list-style-type: none;
+			list-style-image: none;
+		}
+	}
+}
+
+#secondary_nav_container {
+	.clearfix;
+	position: absolute;
+	top: 0;
+	font-family: "Verdana";
+	font-size: 11px;
+	position: relative;
+	z-index: 11;	
+		
+	.secondary_nav;
+}

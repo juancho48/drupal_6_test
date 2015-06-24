@@ -1,0 +1,5 @@
+name = "Admin:hover"
+description = "Displays admin links on hover."
+package = "Administration"
+core = 6.x
+dependencies[] = token

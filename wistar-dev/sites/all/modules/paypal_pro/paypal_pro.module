@@ -1,0 +1,128 @@
+<?php 
+/**
+ * returns list of states
+ */
+function paypal_pro_state_options_united_states() {
+  return array(
+	'AL' => t('AL'),
+	'AK' => t('AK'),
+	'AS' => t('AS'),
+	'AZ' => t('AZ'),
+	'AR' => t('AR'),
+	'CA' => t('CA'),
+	'CO' => t('CO'),
+	'CT' => t('CT'),
+	'DE' => t('DE'),
+	'DC' => t('DC'),
+	'FL' => t('FL'),
+	'GA' => t('GA'),
+	'GU' => t('GU'),
+	'HI' => t('HI'),
+	'ID' => t('ID'),
+	'IL' => t('IL'),
+	'IN' => t('IN'),
+	'IA' => t('IA'),
+	'KS' => t('KS'),
+	'KY' => t('KY'),
+	'LA' => t('LA'),
+	'ME' => t('ME'),
+	'MH' => t('MH'),
+	'MD' => t('MD'),
+	'MA' => t('MA'),
+	'MI' => t('MI'),
+	'MN' => t('MN'),
+	'MS' => t('MS'),
+	'MO' => t('MO'),
+	'MT' => t('MT'),
+	'NE' => t('NE'),
+	'NV' => t('NV'),
+	'NH' => t('NH'),
+	'NJ' => t('NJ'),
+	'NM' => t('NM'),
+	'NY' => t('NY'),
+	'NC' => t('NC'),
+	'ND' => t('ND'),
+	'MP' => t('MP'),
+	'OH' => t('OH'),
+	'OK' => t('OK'),
+	'OR' => t('OR'),
+	'PW' => t('PW'),
+	'PA' => t('PA'),
+	'PR' => t('PR'),
+	'RI' => t('RI'),
+	'SC' => t('SC'),
+	'SD' => t('SD'),
+	'TN' => t('TN'),
+	'TX' => t('TX'),
+	'UT' => t('UT'),
+	'VT' => t('VT'),
+	'VI' => t('VI'),
+	'VA' => t('VA'),
+	'WA' => t('WA'),
+	'WV' => t('WV'),
+	'WI' => t('WI'),
+	'WY' => t('WY'),
+  );
+}
+
+
+/**
+ * helper function for getting billing address form elements
+ */
+function paypal_pro_billing_elements() {
+	$elements = array();
+	
+	$state_options = array(0 => t('State')) + paypal_pro_state_options_united_states();			
+	
+	$elements['first_name'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('First Name'),
+	  '#required' => TRUE		
+	);
+
+	$elements['last_name'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Last Name'),
+	  '#required' => TRUE		
+	);
+	
+	$elements['address1'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Address, Line 1'),
+	  '#required' => TRUE		
+	);		
+	
+	$elements['address2'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Line 2 (optional)'),
+	  '#required' => FALSE
+	);		
+	
+	$elements['city'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('City'),
+	  '#required' => TRUE
+	);
+	
+	$elements['state'] = array(
+	  '#type' => 'select',
+	  '#title' => t('State'),
+	  '#options' => $state_options,
+	  '#default_value' => 0,
+	  '#required' => TRUE
+	);				
+	
+	$elements['zip'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Zip Code'),		  
+	  '#required' => TRUE
+	);								
+	
+	$elements['email'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Email Address'),		  
+	  '#required' => FALSE
+	);					
+
+	return $elements;
+}

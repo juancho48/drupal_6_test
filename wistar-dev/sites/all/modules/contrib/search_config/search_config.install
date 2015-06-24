@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * hook_uninstall implementation
+ * 
+ * Remove persistant variables.
+ */
+function search_config_uninstall() {
+  variable_del('search_config_default_search');
+  variable_del('search_config_disable_or');
+  variable_del('search_config_disable_phrase');
+  variable_del('search_config_disable_negative');
+  variable_del('search_config_disable_type');
+  variable_del('search_config_disable_category_all');
+  variable_del('search_config_disable_category');
+}

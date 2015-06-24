@@ -1,0 +1,560 @@
+<?php 
+/**
+ * implementation of hook_theme
+ */
+function wistar_event_theme() {
+	return array(
+		'wistar_event_registration' => array(
+			'type' => 'theme',
+			'template' => 'event-registration',
+			'arguments' => array(
+				'event' => null
+			)
+		),
+		'wistar_event_registration_closed' => array(
+			'type' => 'theme',
+			'template' => 'event-registration-closed',
+			'arguments' => array(
+				'event' => null,
+				'reason' => 'This event is no longer available'
+			)
+		),
+		'wistar_event_registration_result' => array(
+			'type' => 'theme',
+			'template' => 'event-registration-result',
+			'arguments' => array(
+				'registration' => null,
+				'proxy' => node_load(variable_get('wistar_event_result_node', 1248))
+			)
+		),
+		'wistar_event_registration_email' => array(
+			'type' => 'theme',
+			'template' => 'event-registration-email',
+			'arguments' => array(
+				'node' => null
+			)
+		)		
+	);
+}
+
+/**
+ * implementation of hook_menu
+ */	
+function wistar_event_menu() {
+	$items = array();
+	
+	$items['events/registration/%'] = array(
+		'title' => 'Event Registration',
+		'page callback' => 'wistar_event_registration_page',
+		'page arguments' => array(2),
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK
+	);
+
+	$items['events/registration/confirmation'] = array(
+		'title' => 'Thank You',
+		'page callback' => 'wistar_event_registration_return_callback',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK
+	);	
+
+	return $items;
+}
+
+
+function wistar_event_registration_page($eid) {
+	$event = node_load($eid);
+	
+	if(!$event) {
+		return drupal_not_found();
+	}
+	
+	$when = strtotime(date('F d, Y', strtotime(substr($event->field_event_date[0]['value'], 0, 10))));
+	$today = strtotime(date('F d, Y'));
+	
+	if( $when <= $today ) {
+		return theme('wistar_event_registration_closed', $event, 'Registration for this event is closed');		
+	}
+	
+	return theme('wistar_event_registration', $event);			
+}
+
+function wistar_event_registration_form(&$form_state, $event) {
+	global $base_url;
+	module_load_include('inc', 'wistar_paypal');
+
+	$form = array();
+	$form['tickets'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Tickets'),
+		'#attributes' => array('class' => 'form-ticket'),
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE,
+		'#prefix' => '<div class="ticket-selector">',
+		'#suffix' => '</div>'
+	);
+
+	$form['billing'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Personal Information'),
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE,
+		'#prefix' => '<div class="form-items">',
+		'#suffix' => '</div>'
+	);
+
+	$form['info'] = array(
+		'#type' => 'fieldset',
+		'#title' => t(''),
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE,
+		'#prefix' => '<div class="form-items">',
+		'#suffix' => '</div>'
+	);
+
+
+	// SETUP TICKETS
+	$tickets = array();
+	$descriptions = array();
+		
+	foreach($event->field_ticket_name as $idx => $ticket_name) {
+		$tickets[$idx] = $ticket_name['value'] . ' -- $' . $event->field_ticket_price[$idx]['value'];
+		$descriptions[$idx] = array('name' => $ticket_name['value'], 'value' =>$event->field_ticket_description[$idx]['value']);
+	}
+
+	$form['tickets']['ticket'] = array(
+		'#type' => 'select',
+		'#required' => true,
+		'#options' => $tickets,
+		
+	);
+	$form['tickets']['quantity'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Quantity'),
+		'#default_value' => '1',
+		'#required' => true,
+		'#maxlength' => 4,
+		'#suffix' => '<div id="edit-quantity-qty" class="form-item">'.t('Qty.').'</div>',
+	);
+	//$form['tickets']['quantity']['label'] = array();
+	$form['tickets']['description'] = array(
+		'#type' => 'markup',
+		'#value' => wistar_event_format_ticket_descriptions($descriptions),
+		'#prefix' => '<div class="ticket-descriptions">',
+		'#suffix' => '</div>'
+	);		
+	
+	// SETUP CUSTOMER INFO
+	$form['info']['node_event'] = array(
+		'#type' => 'hidden',
+		'#value' => $event->nid,
+		'#required' => false
+	);
+
+	$form['info']['node_name_org'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Organization'),
+		'#required' => false
+	);
+
+	$form['info']['node_prof_title'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Title'),
+		'#required' => false
+	);
+
+	$form['info']['node_phone'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Phone #'),
+		'#required' => false
+	);
+
+	$form['info']['node_fax'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Fax #'),
+		'#required' => false
+	);
+
+	$form['info']['node_guest'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Name of additional person you wish to register (optional)'),
+		'#required' => false
+	);
+
+	// setup extra wistar_paypal elements
+	$form['billing'] = array_merge($form['billing'], wistar_event_billing_fields());	
+
+	$form['return'] = array(
+	  '#type' => 'hidden',
+	  '#value' => $base_url . '/events/registration/confirmation',
+	  '#required' => TRUE
+	);		
+
+	$form['cancel_return'] = array(
+	  '#type' => 'hidden',
+	  '#value' => $base_url . '/events/registration/' . $event->nid . '?message=' . urlencode('Donation Cancelled'),
+	  '#required' => TRUE
+	);
+
+	$form['item_name'] = array(
+	  '#type' => 'hidden',
+	  '#value' => 'Registration: ' . $event->title,
+	  '#required' => TRUE
+	);		
+
+	$form['cmd'] = array(
+	  '#type' => 'hidden',
+	  '#value' => '_xclick',
+	  '#required' => TRUE		
+	);	
+	
+	$form['submit'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Complete Registration >')
+	);		
+		
+	return $form;	
+}
+
+function wistar_event_registration_form_submit(&$form, &$form_state) {
+	$event = node_load($form_state['values']['node_event']);
+	$ticket = $form_state['values']['ticket'];		
+	$form_state['values']['amount'] = $event->field_ticket_price[$ticket]['value'];
+
+	if(wistar_event_requires_payment($form_state)) {
+		$node = wistar_event_registration_save($form_state['values']);
+		if($node && $node->nid) {
+			$form_state['values']['item_number'] = $node->nid;
+			// if we have a valid donation node saved, hand off to paypal via get
+			drupal_goto( variable_get('wistar_paypal_payment_url', 'https://www.paypal.com/cgi-bin/webscr') . '?' . http_build_query($form_state['values'], '', '&'));
+		}
+	}
+	else {
+		$form_state['values']['payment_status'] = 'Free';
+		$node = wistar_event_registration_save($form_state['values']);
+		if($node && $node->nid) {
+			wistar_event_registration_send_email($node);		
+			drupal_goto('events/registration/confirmation' , 'payment_status=Free&item_number=' . $node->nid);
+		}			
+	}
+}
+
+/**
+ * utility function for checking the submission
+ */
+function wistar_event_requires_payment(&$form_state) {
+	return ((int)$form_state['values']['amount']) > 0;	
+}
+
+/**
+ * paypal return callback handler
+ */
+function wistar_event_registration_return_callback() {
+
+	// if we get back here, check for an item number (nid) and update if necessary
+	if(isset($_REQUEST['item_number']) && is_numeric($_REQUEST['item_number'])) {
+		if($node = node_load($_REQUEST['item_number'])) {
+			wistar_registration_ipn_update($node);
+		}
+	}	
+	
+	return theme('wistar_event_registration_result', $node);
+} 
+
+/**
+ * paypal cancel callback handler
+ */
+function wistar_event_registration_cancel_callback() {
+	return theme('wistar_donation_billing');
+} 
+
+/**
+ * IPN update function for this type
+ */
+function wistar_registration_ipn_update(&$node) {
+	if(isset($_REQUEST['payment_status'])) {
+		$node->field_payment_status[0]['value'] = $_REQUEST['payment_status'];
+	}
+	
+	if(isset($_REQUEST['tx'])) {
+		// why can't these keys be consistent?
+		$node->field_transaction_id[0]['value'] = $_REQUEST['tx'];		
+	}
+
+	if(isset($_REQUEST['st'])) {
+		// why can't these keys be consistent?	
+		$node->field_payment_status[0]['value'] = $_REQUEST['st'];
+	}
+	
+	if($node->field_payment_status[0]['value'] == "Completed") {
+		wistar_event_registration_send_email($node);
+	}
+	
+	return node_save($node);
+}
+
+/**
+ * helper to send out an email to confirm
+ */
+function wistar_event_registration_send_email($registration) {
+	$email = $registration->field_email[0]['value'];
+	$event = node_load($registration->field_event[0]['nid']);
+	if($email) {
+		$message = array(
+		  'to' => $email,
+		  'subject' => t('Wistar Event Registration: ' . $event->title),
+		  'body' => wistar_event_get_message_from_registration($registration, 'email'),
+		  'headers' => array('From' => 'Wistar Special Events <specialevents@wistar.org>')
+		);
+
+		drupal_mail_send($message);
+	}
+
+	//
+	// Notify wistar
+	// TODO: Make this better
+	//
+	$message['to'] = 'ehoffmann@wistar.org';
+	$message['subject'] = 'Wistar Event Registration: ' . $event->title . ' for ' . $registration->field_first_name[0]['value'] . ' ' . $registration->field_last_name[0]['value'];
+	drupal_mail_send($message);
+}
+
+/**
+ * helper to get a formatted, tokenized message from a registration
+ */
+function wistar_event_get_message_from_registration($registration, $type = 'page') {
+	/*$event = node_load($registration->field_event[0]['nid']);
+	$datets = strtotime($event->field_event_date[0]['value']);	
+
+	//
+	// No idea why the event date won't respect the timezone.
+	// This is a temporary measure for now - to just adjust -5 hours.
+	// - JK 2011-10-24
+	$datets -= 3600 * 5;
+
+	$date = date('F d, Y', $datets);
+	$time = date('g:iA', $datets);
+*/
+	$timezone = variable_get('date_default_timezone', 0);
+	$event = node_load($registration->field_event[0]['nid']);
+	$datets = strtotime($event->field_event_date[0]['value'])+$timezone;
+	$date = format_date($datets,'custom','F d, Y');
+	$time = format_date($datets,'custom','g:iA');
+	
+	if ( FALSE && user_access('administer nodes') ) { 
+
+		$time_string = $event->field_event_date[0]['value'] . '+5:00';
+	
+		$date_obj = new DateTime( $time_string );
+
+		echo $time . '<br />';
+
+		ini_set('display_errors', 'On');
+		error_reporting( E_ALL );
+		echo $time_string . '<br />';
+		echo date_default_timezone_get() . '<br />';
+		print_r( date_formatter_process( $event->field_event_date[0]) ); echo '<br />';
+		echo $date_obj->format('Y-m-d g:iA T'); echo '<br />';
+		echo date_format_date($date_obj); echo '<br />';
+		exit;
+	}	
+
+	$tokens = array(
+			'!name' => $registration->field_first_name[0]['value'] . ' ' . $registration->field_last_name[0]['value'], 
+			'!event_name' => trim($event->title),
+			'!event_date' => $date,
+			'!event_time' => $time,
+			'!event_location' => strip_tags(preg_replace('/<br \/>/', ', ', $event->field_event_location[0]['value'])),
+			'!instructions' => '',
+			'!registration_number' => 'Registration #' . $registration->nid
+	);
+	
+	$tokens['!instructions'] = "Please print either the confirmation page or the confirmation email and bring it with you. It will serve as your ticket to the event.";
+
+	if($registration->field_guest[0]['value']) {
+		$tokens['!name'] = $registration->field_salutation[0]['value']  . ' ' .$registration->field_first_name[0]['value'] . ' ' . $registration->field_last_name[0]['value'] . ' and ' . $registration->field_guest[0]['value'];
+	}
+	
+	$message = t(theme('wistar_event_registration_email'), $tokens);
+	
+	return $message;
+}
+
+/**
+ * helper function for saving a registration 
+ */
+function wistar_event_registration_save($values) {
+	global $user;
+	$node = new stdClass();
+	$node->name = 'wistar';
+	$node->type = 'registration';
+
+	// auto nodetitle will take over, set a default
+	$node->title = 'Event Registration';
+
+	$event = node_load($values['node_event']);
+
+	$node->field_salutation[0]['value'] = $values['salutation'];
+	$node->field_first_name[0]['value'] = $values['first_name'];
+	$node->field_last_name[0]['value'] = $values['last_name'];
+	$node->field_address_type[0]['value'] = $values['address_type'];	
+	$node->field_address[0]['value'] = $values['address1'] . ' ' . $values['address2'];;
+	$node->field_city[0]['value'] = $values['city'];
+	$node->field_state[0]['value'] = $values['state'];
+	$node->field_zip[0]['value'] = $values['zip'];
+
+	$node->field_professional_title[0]['value'] = $values['node_prof_title'];	
+	$node->field_name_org[0]['value'] = $values['node_name_org'];
+	$node->field_phone[0]['value'] = $values['node_phone'];
+	$node->field_fax[0]['value'] = $values['node_fax'];
+	$node->field_guest[0]['value'] = $values['node_guest'];
+	
+	$node->field_email[0]['value'] = $values['email'];	
+	$node->field_event[0]['nid'] = $values['node_event'];
+	$node->field_ticket_name[0]['value'] = $event->field_ticket_name[$values['ticket']]['value'];
+	$node->field_payment_status[0]['value'] = isset($values['payment_status']) ? $values['payment_status'] : 'Pending';
+	$node->field_registration_quantity[0]['value'] = $values['quantity'];
+	
+	if( $node = node_submit($node) ){
+		if($node->validated) {
+			node_save($node);		
+			return $node;
+		}
+	}
+	
+	return false;
+}
+
+/**
+ * helper for loading event registration by the user eamil an event id
+ */
+function wistar_event_registration_load($eid, $email) {
+	$query = 'SELECT ctr.nid from content_type_registration ctr 
+				LEFT JOIN content_field_email cfe on ctr.vid = cfe.vid 
+				WHERE cfe.field_email_value = "%s" 
+					AND ctr.field_event_nid = %d';
+
+	if( !$email || !$eid || !is_numeric($eid) ) {
+		 return null;
+	}
+	
+	return db_result(db_query($query, $email, $eid));
+}
+
+// TEMPORARY
+function wistar_event_billing_fields() {
+	global $base_url;
+	$elements = array();
+	
+	$state_options = array(0 => t('State')) + wistar_paypal_state_options_united_states();			
+
+	$elements['salutation'] = array(
+	  '#type' => 'select',
+	  '#options' => array('Mr.' => 'Mr.', 'Dr.' => 'Dr.', 'Mrs.' => 'Mrs.', 'Ms.' => 'Ms.'),
+	  '#title' => t(''),
+	  '#required' => FALSE		
+	);
+	
+	$elements['first_name'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('First Name'),
+	  '#required' => TRUE		
+	);
+
+	$elements['last_name'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Last Name'),
+	  '#required' => TRUE		
+	);
+	
+	$elements['address_type'] = array(
+	  '#type' => 'select',
+	  '#title' => t(''),
+	  '#options' => array('' => 'Address Type', 'Home' => 'Home', 'Business' => 'Business'),
+	  '#default_value' => '',
+	  '#required' => false
+	);		
+
+	$elements['address1'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Address, Line 1'),
+	  '#required' => TRUE		
+	);		
+	
+	$elements['address2'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Line 2 (optional)'),
+	  '#required' => FALSE
+	);		
+	
+	$elements['city'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('City'),
+	  '#required' => TRUE
+	);
+	
+	$elements['state'] = array(
+	  '#type' => 'select',
+	  '#title' => t('State'),
+	  '#options' => $state_options,
+	  '#default_value' => 0,
+	  '#required' => TRUE
+	);				
+	
+	$elements['zip'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Zip Code'),		  
+	  '#required' => TRUE
+	);								
+	
+	$elements['email'] = array(
+	  '#type' => 'textfield',
+	  '#title' => t('Email Address'),		  
+	  '#required' => TRUE
+	);					
+				
+	$elements['image_url'] = array(
+	  '#type' => 'hidden',
+	  '#value' => variable_get('wistar_paypal_logo', $base_url . '/sites/all/themes/wistar/images/layout/logo.jpg'),
+	  '#required' => TRUE
+	);			
+
+	$elements['rm'] = array(
+	  '#type' => 'hidden',
+	  '#value' => '2',
+	  '#required' => TRUE
+	);		
+
+	$elements['business'] = array(
+	  '#type' => 'hidden',
+	  '#value' => variable_get('wistar_paypal_business', 'surplus@wistar.org'),
+	  '#required' => TRUE		
+	);	
+	
+	$elements['hosted_button_id'] = array(
+	  '#type' => 'hidden',
+	  '#value' => variable_get('wistar_paypal_hosted_button_id', '6PY336ZZK7S72'),
+	  '#required' => TRUE		
+	);
+	
+	return $elements;
+}
+
+/**
+ * helper function 
+ */
+function wistar_event_format_ticket_descriptions($descriptions) {
+	$ret = '';
+	$count = 1;
+	foreach($descriptions as $idx => $description) {
+		$class = 'ticket-description-wrapper';
+		if( $count == 1 ) $class = 'ticket-description-wrapper selected';
+		
+		$ret .= '<div id="ticket-description-' . $idx . '" class="' . $class . '">';
+		$ret .= '<h3>' . $description['name'] . '</h3>';
+		$ret .= '<p>' . $description['value'] . '</p></div>';
+		$count++;
+	}
+	
+	return $ret;
+}

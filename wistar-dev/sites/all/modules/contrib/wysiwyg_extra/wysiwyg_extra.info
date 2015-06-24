@@ -1,0 +1,11 @@
+name = Wysiwyg extra
+description = "Adds the wysiwyg editor to textareas not usually available"
+package = "User interface"
+dependencies[] = "wysiwyg"
+core = 6.x
+; Information added by drupal.org packaging script on 2012-01-04
+version = "6.x-1.1"
+core = "6.x"
+project = "wysiwyg_extra"
+datestamp = "1325698244"
+

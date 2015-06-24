@@ -1,0 +1,19 @@
+h1. Known Issues / Marked for Feedback
+
+	* Colorization needs to be implemented, but due to past problems in this area we will need to know exactly how
+		content will be categorized for colorization before we do this.
+
+	* Alternating "section" background colors in the tabset area are not implemented
+
+	* Event list and Press release list on the homepage are hardcoded into block right now.
+
+h1. Needs to be done
+
+	* Publications list on scientist page - currently is a textarea, but probably needs to be a separate content type
+
+h1. IE issues
+
+	h2. IE8
+	
+		* RGBA values need IE8 compaitble filters
+		* Sliding list is slightly buggy

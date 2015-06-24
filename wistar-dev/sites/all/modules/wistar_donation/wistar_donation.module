@@ -1,0 +1,1576 @@
+<?php 
+define('WISTAR_CHOOSE_A_PROGRAM_VID', 11);
+define('WISTAR_CHOOSE_A_LAB_VID', 8);
+define('WISTAR_DONATION_GIVING_IN_MEMORY_URL', 'support-wistar/donate-online/giving-in-memory');
+define('WISTAR_DONATION_RESEARCH_URL', 'our-science/research-areas/give');
+//define('WISTAR_PAYPAL_URL', 'https://sandbox.paypal.com/cgi-bin/webscr');
+define('WISTAR_PAYPAL_URL', 'https://www.paypal.com/cgi-bin/webscr');
+
+/**
+ * implementation of hook_theme
+ */
+function wistar_donation_theme() {
+	return array(
+		'wistar_donation_billing' => array(
+			'type' => 'theme',
+			'template' => 'wistar-donation-billing',
+			'arguments' => array(
+				'node' => node_load(variable_get('wistar_donation_give_node_id', ''))
+			)
+		),
+		'wistar_donation_billing_giving_in_memory' => array(
+			'type' => 'theme',
+			'template' => 'wistar-donation-billing-giving-in-memory',
+			'arguments' => array(
+				'node' => node_load(variable_get('wistar_donation_giving_in_memory_node_id', ''))
+			)
+		),
+		'wistar_donation_billing_research' => array(
+			'type' => 'theme',
+			'template' => 'wistar-donation-billing-research',
+			'arguments' => array(
+				'node' => node_load(variable_get('wistar_donation_give_research_node_id', '')),
+				'donation_billing_research_form' => NULL,
+			)
+		),
+		'wistar_donation_result' => array(
+			'type' => 'theme',
+			'template' => 'wistar-donation-result',
+			'arguments' => array(
+				'node' => node_load(variable_get('wistar_donation_result_node', ''))
+			)
+		),
+		'wistar_donation_confirmation' => array(
+			'type' => 'theme',
+			'template' => 'wistar-donation-confirmation',
+			'arguments' => array(
+			)
+		)
+	);
+}
+
+/**
+ * implementation of hook_menu
+ */	
+function wistar_donation_menu() {
+	$items = array();
+	
+	$items['admin/donations/settings'] = array(
+		'title' => t('Donations settings'),
+		'description' => 'Wistar Donations settings.',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('wistar_donation_admin_donations_settings_form'),
+		'access arguments' => array('access administration pages'),
+		'type' => MENU_NORMAL_ITEM,
+		'file' => 'wistar_donation.admin.inc',
+	);
+	
+	$items['support-wistar/donate-online'] = array(
+		'title' => t('Donate Online'),
+		'page callback' => 'theme',
+		'page arguments' => array('wistar_donation_billing'),
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK
+	);
+	
+	$items[WISTAR_DONATION_GIVING_IN_MEMORY_URL] = array(
+		'title' => t('Give today in Honor or Memory'),
+		'page callback' => 'theme',
+		'page arguments' => array('wistar_donation_billing_giving_in_memory'),
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK
+	);
+	
+	$items[WISTAR_DONATION_RESEARCH_URL] = array(
+		'title' => t('Give to an area of research'),
+		//'page callback' => 'theme',
+		'page callback' => 'wistar_donation_billing_research_page',
+		//'page arguments' => array('wistar_donation_billing_research'),
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK
+	);
+	
+	// alias for consistency
+	$items['support-wistar/donate-online/billing'] = $items['support-wistar/donate-online'];
+
+	$items['support-wistar/donate-online/thank-you'] = array(
+		'title' => 'Thank You',
+		'page callback' => 'wistar_donation_return_callback',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK
+	);
+	
+	$items['support-wistar/donate-online/cancel'] = array(
+		'title' => 'Thank You',
+		'page callback' => 'wistar_donation_cancel_callback',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK
+	);
+	$items['give/confirmation'] = array(
+		'title' => 'Confirmation Payment',
+		'page callback' => 'theme',
+		'page arguments' =>array('wistar_donation_confirmation'),
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK
+	);
+	return $items;
+}
+/**
+ * implementation of hook_perm
+ */
+function wistar_donation_perm() {
+	return array('access donation form');
+}
+
+/**
+ * get a field's allowed values
+ */
+function wistar_donation_field_options($field_name) {
+	module_load_include('inc', 'Content', 'includes/content.crud');
+	$fields = content_field_instance_read(array(field_name => $field_name));
+
+	$allowed_string = $fields[0]['allowed_values'];  // string with \r\n separators
+	$allowed_values = explode("\r\n", $allowed_string);
+
+	$options = array();
+	foreach ($allowed_values as $allowed_value) {
+		$pos = strpos($allowed_value, '|', 0);
+		if ($pos !== false) {
+			$key = substr($allowed_value, 0, $pos);
+		}
+		
+		$value = substr($allowed_value, $pos + 1, strlen($allowed_value));
+		
+		$options[$key] = ($value) ? $value : null;
+	}
+	return $options;
+}
+
+/**
+ * builder donation form
+ */
+function wistar_donation_billing_form(&$form_state) {
+	if(!empty($_SESSION['custid'])){
+		$_POST['CUSTID']=$_SESSION['custid'];
+		unset($_SESSION['custid']);
+	}
+	if(isset($_POST['CUSTID'])){
+		$node = node_load($_POST['CUSTID']);
+		$node->field_payment_status[0]['value'] ='Cancelled';
+		node_save($node);
+	}
+	
+	global $base_url;
+	module_load_include('inc', 'wistar_donation');
+	module_load_include('inc', 'wistar_paypal');
+	$form = array();
+	// setup extra wistar_paypal elements
+	$form['return'] = array(
+	  '#type' => 'hidden',
+	  '#value' => $base_url . '/support-wistar/donate-online/thank-you',
+	  '#required' => TRUE
+	);		
+	$form['cancel_return'] = array(
+	  '#type' => 'hidden',
+	  '#value' => $base_url . '/support-wistar/donate-online?message=' . urlencode('Donation Cancelled'),
+	  '#required' => TRUE
+	);
+	$form['progress'] = array(
+		'#value' => wistar_theme_donation_progress_bar(0)		
+	);
+	$form['item_name'] = array(
+	  '#type' => 'hidden',
+	  '#value' => t('Standard Donation'),
+	  '#required' => TRUE
+	);		
+	$form['cmd'] = array(
+	  '#type' => 'hidden',
+	  '#value' => '_donations',
+	  '#required' => TRUE		
+	);
+	$node_give = node_load(variable_get('wistar_donation_give_node_id', ''));
+	if(!empty($node_give->field_body[0]['value'])){
+		$form['node_body_value'] = array(
+			'#type' => 'markup',
+			'#value' => $node_give->field_body[0]['value']
+		);
+	}
+	$form['given_links'] = array(
+		'#type' => 'markup',
+		'#value' => '<p>Give in '.l(t('Honor or Memory &gt;'), WISTAR_DONATION_GIVING_IN_MEMORY_URL, array('html'=>true, 'attributes'=>array('class'=>'more donation'))).'</p><p>Give to an '.l(t('area of research &gt;'), WISTAR_DONATION_RESEARCH_URL, array('html'=>true, 'attributes'=>array('class'=>'more donation'))).'</p>'
+	);
+	
+	$amount_options = array(
+		'50' => '$50.00',
+		'100' => '$100.00',
+		'250' => '$250.00',
+		'500' => '$500.00',
+		'1000' => '$1000.00',
+		'custom' => t('Enter another amount'),
+	);
+	
+	$form['donation_amount'] = array(
+		'#type' => 'fieldset',
+		'#title' => 'Donation<br />Amount',
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE
+	);
+	$form['donation_amount']['items'] = array(
+		'#prefix' => '<div class="form-items billing-form-items">',
+		'#suffix' => '</div>'
+	);
+	
+	$form['donation_amount']['items']['amount'] = array(
+		'#type' => 'radios',
+		'#default_value' =>'100',
+		'#options' => $amount_options,
+		'#required' => TRUE
+	);
+	$form['donation_amount']['items']['label_donation_amount']=array(
+		'#type'=>'markup',
+		'#value'=>'<div class="amount_label">$</div>',
+	);
+	
+	$form['donation_amount']['items']['amount_field'] = array(
+		'#type' => 'textfield',
+		'#size' => 46,
+		'#weight' => 15,
+		'#description' => t('Please only enter numbers. Commas and periods are not allowed.'),
+	);
+	$form['donation_amount']['items']['namedonor'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Name as it will appear in donor listings.'),
+		'#weight' => 16,
+	);
+	
+	$form['donation_amount']['items']['anonymous'] = array(
+		'#type' => 'checkbox',
+		'#title' => t('Make my donation anonymous'),
+		'#required' => FALSE,
+		'#weight' => 17,
+	);
+	
+	
+	$form['billing'] = array(
+	  '#type' => 'fieldset',
+	  '#title' => 'Billing <br />Information',
+	  '#collapsible' => FALSE,
+	  '#collapsed' => FALSE
+	);
+	$form['billing']['items'] = array(
+		'#prefix' => '<div class="form-items billing-form-items">',
+		'#suffix' => '</div>'
+	);
+	$form['billing']['items'] = array_merge($form['billing']['items'], wistar_paypal_form_elements());
+	$form['donation'] = array(
+	  '#type' => 'fieldset',
+	  '#collapsible' => FALSE,
+	  '#collapsed' => FALSE
+	);		
+	$form['donation']['items'] = array(
+		'#prefix' => '<div class="form-items donation-form-items">',
+		'#suffix' => '</div>'
+	);
+	$form['donation']['items']['info_send'] = array(
+		'#type' => 'checkbox',
+		'#title' => t('Yes, I would like to receive emails from The Wistar Institute.'),
+		'#default_value' => 1,
+		'#required' => FALSE
+	);
+	$form['donation']['items']['donor_title'] = array(
+		'#type' => 'select',
+		'#title' => t('Spouse/Joint Donor Title'),
+		'#options' => array(
+			''=>'',
+			'mr'=>t('Mr.'),
+			'ms'=>t('Ms.'),
+			'mrs'=>t('Mrs.'),
+			'dr'=>t('Dr.')
+		)
+	);
+	$form['donation']['items']['donor_first_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Spouse/Joint Donor First Name')
+	);
+	$form['donation']['items']['donor_last_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Spouse/Joint Donor Last Name')
+	);
+	$form['donation']['items']['donor_suffix'] = array(
+		'#type' => 'select',
+		'#title' => t('Spouse/Joint Donor Suffix'),
+		'#options' => array(
+			''=>'',
+			'sr'=>t('Sr.'),
+			'jr'=>t('Jr.'),
+			'iii'=>t('III'),
+			'iv'=>t('IV'),
+			'v'=>t('V')
+		)
+	);
+	
+	$form['submit'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Payment Information >')
+	);		
+	if(isset($_GET['message'])) {
+		drupal_set_message(check_plain($_GET['message']));
+	}
+
+	return $form;
+}
+
+function wistar_donation_billing_form_validate($form, &$form_state){
+	if($form_state['values']['amount']=='custom'&&$form_state['values']['amount_field']<=0){
+			form_set_error('amount_field',t('Please enter a valid amount'));
+	}
+	else if($form_state['values']['amount']=='custom'&&is_numeric($form_state['values']['amount_field'])==false){
+		form_set_error('amount_field',t('Please enter a valid amount'));
+	}
+}
+/**
+ * submit handler for billing form
+ */
+function wistar_donation_billing_form_submit(&$form, &$form_state) {
+	$values = $form_state['values'];
+
+	if($values['amount'] == 'custom'){
+		$values['amount'] = $values['amount_field'];
+	}
+	$node = wistar_donation_save($values);
+	
+	// if we have a valid donation node saved, hand off to paypal via get
+	if($node && $node->nid) {
+		$values['item_name'] = iconv("UTF-8", "ISO-8859-1", $values['item_name']);
+		$values['first_name'] = iconv("UTF-8", "ISO-8859-1", $values['first_name']);
+		$values['last_name'] = iconv("UTF-8", "ISO-8859-1", $values['last_name']);
+		//$values['item_number'] = $node->nid;
+		$values['custid'] = $node->nid; /* ----- */
+		$values['H_PhoneNumber']=$values['phone'];
+		unset($values['op']);
+		unset($values['submit']);
+		unset($values['form_build_id']);
+		unset($values['form_token']);
+		unset($values['form_id']);
+		unset($values['image_url']);
+		unset($values['return']);
+		unset($values['cancel_return']);
+		unset($values['name_title']);
+		unset($values['donor_title']);
+		unset($values['donor_first_name']);
+		unset($values['donor_last_name']);
+		unset($values['donor_suffix']);
+		unset($values['namedonor']);
+		unset($values['anonymous']);
+		//pa($values,1);
+		//unset($values['email']);
+		//$name=iconv("UTF-8", "ISO-8859-1", $values['first_name']).' '.iconv("UTF-8", "ISO-8859-1", $values['middle_initial']).' '.iconv("UTF-8", "ISO-8859-1", $values['last_name']);
+		//$values['name'] =$name;
+		//$values['Address']=$values['address1'].', '.$values['address2'];
+		/*$values['NAMETOSHIP'] =$name;
+		$values['login']=variable_get('wistar_payflow_login','');
+		$values['partner']=variable_get('wistar_payflow_partner','');
+		$values['type']='S';
+		$values['Address']=$values['address1'];
+		$values['billingAddress2']=$values['address2'];
+		$values['ADDRESSTOSHIP']=$values['address1'];
+		$values['CITYTOSHIP']=$values['city'];
+		$values['STATETOSHIP']=$values['state'];
+		$values['COUNTRYTOSHIP']=$values['country'];
+		$values['ZIPTOSHIP']=$values['zip'];*/
+		
+		
+		//pa(http_build_query($values, '', '&'),1);
+		//$send_values=str_replace('&image_url=https%3A%2F%2Fwww.swiftfile.net%2Fwistar%2Flogo.jpg','',http_build_query($values, '', '&'));
+		//drupal_goto( variable_get('wistar_paypal_payment_url', WISTAR_PAYPAL_URL) . '?' . http_build_query($values, '', '&'));
+		//drupal_goto( 'https://payflowlink.paypal.com'. '?'.http_build_query($values, '', '&'));
+		//$_SESSION['NAMETOSHIP'] =$name;
+		//$_SESSION['login']=variable_get('wistar_payflow_login','');
+		//$_SESSION['partner']=variable_get('wistar_payflow_partner','');
+		//$_SESSION['type']='S';
+		//$_SESSION['ADDRESSTOSHIP']=$values['address1'];
+		session_start();
+		$_SESSION['first_name']= iconv("UTF-8", "ISO-8859-1", $values['first_name']);
+		$_SESSION['last_name']= iconv("UTF-8", "ISO-8859-1", $values['last_name']);
+		$_SESSION['custid'] = $node->nid;
+		$_SESSION['phone']=$values['phone'];
+		$_SESSION['address']=$values['address1'];
+		$_SESSION['address2']=$values['address2'];
+		$_SESSION['city']=$values['city'];
+		$_SESSION['state']=$values['state'];
+		$_SESSION['country']=$values['country'];
+		$_SESSION['zip']=$values['zip'];
+		$_SESSION['email']=$values['email'];
+		$_SESSION['donation']=$values['amount'];
+		$_SESSION['donation_form']=TRUE;
+		drupal_goto('give/confirmation');
+		//die();
+	} else {
+		drupal_set_message('An error occurred while processsing your donation.', 'error');
+	}
+}
+
+/**
+ * builder donation giving-in-memory form
+ */
+function wistar_donation_billing_giving_in_memory_form(&$form_state) {
+	global $base_url;
+	module_load_include('inc', 'wistar_donation');
+	module_load_include('inc', 'wistar_paypal');
+	$form = array();
+	// setup extra wistar_paypal elements
+	$form['return'] = array(
+	  '#type' => 'hidden',
+	  '#value' => $base_url . '/support-wistar/donate-online/thank-you',
+	  '#required' => TRUE
+	);		
+	$form['cancel_return'] = array(
+	  '#type' => 'hidden',
+	  '#value' => $base_url . '/support-wistar/donate-online?message=' . urlencode('Donation Cancelled'),
+	  '#required' => TRUE
+	);
+	$form['progress'] = array(
+		'#value' => wistar_theme_donation_progress_bar(0)		
+	);
+	$form['item_name'] = array(
+	  '#type' => 'hidden',
+	  '#value' => t('Giving in Memory'),
+	  '#required' => TRUE
+	);		
+	$form['cmd'] = array(
+	  '#type' => 'hidden',
+	  '#value' => '_donations',
+	  '#required' => TRUE		
+	);
+	$node_giving_in_memory = node_load(variable_get('wistar_donation_giving_in_memory_node_id', ''));
+	if(!empty($node_giving_in_memory->field_body[0]['value'])){
+		$form['node_body_value'] = array(
+			'#type' => 'markup',
+			'#value' => $node_giving_in_memory->field_body[0]['value']
+		);
+	}
+	$form['honor_gift'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Purpose of<br />Donation'),
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE
+	);
+	$form['honor_gift']['items'] = array(
+		'#prefix' => '<div class="form-items billing-form-items">',
+		'#suffix' => '</div>'
+	);
+	$form['honor_gift']['items']['honor_gift_type'] = array(
+		'#type' => 'select',
+		'#title' => t('Purpose of Donation'),
+		'#options' => array(
+			''=>'',
+			'In Memory of'=>t('In Memory of'),
+			'In Honor of'=>t('In Honor of')
+		),
+		'#required' => TRUE
+	);
+	$form['honor_gift']['items']['honor_gift_title'] = array(
+		'#type' => 'select',
+		'#title' => t('Title'),
+		'#options' => array(
+			''=>'',
+			'mr'=>t('Mr.'),
+			'ms'=>t('Ms.'),
+			'mrs'=>t('Mrs.'),
+			'dr'=>t('Dr.')
+		)
+	);
+	$form['honor_gift']['items']['honor_gift_first_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('First Name')
+	);
+	$form['honor_gift']['items']['honor_gift_middle_initial'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Middle Initial'),
+		'#size' => 10,
+		'#maxlength' => 10,
+		'#required' => FALSE
+	);
+	$form['honor_gift']['items']['honor_gift_last_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Last Name')
+	);
+	$form['honor_gift']['items']['honor_gift_suffix'] = array(
+		'#type' => 'select',
+		'#title' => t('Suffix'),
+		'#options' => array(
+			''=>'',
+			'sr'=>t('Sr.'),
+			'jr'=>t('Jr.'),
+			'iii'=>t('III'),
+			'iv'=>t('IV'),
+			'v'=>t('V')
+		)
+	);
+	$amount_options = array(
+		'50' => '$50.00',
+		'100' => '$100.00',
+		'250' => '$250.00',
+		'500' => '$500.00',
+		'1000' => '$1000.00',
+		'custom' => t('Enter another amount'),
+	);
+	$form['donation_amount'] = array(
+		'#type' => 'fieldset',
+		'#title' => 'Donation<br />Amount',
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE
+	);
+	
+	$form['donation_amount']['items'] = array(
+		'#prefix' => '<div class="form-items billing-form-items">',
+		'#suffix' => '</div>'
+	);
+	$form['donation_amount']['items']['markup'] = array(
+		'#type' => 'markup',
+		'#value' => '<div class="form-item" style="width:100%;"><em>'.t('We ask for a minimum donation amount of <strong>$10.00 per tribute card</strong>.').'</em></div>'
+	);
+	$form['donation_amount']['items']['amount'] = array(
+		'#type' => 'radios',
+		'#default_value' => '100',
+		'#options' => $amount_options,
+		'#required' => TRUE
+	);
+	$form['donation_amount']['items']['label_donation_amount']=array(
+		'#type'=>'markup',
+		'#value'=>'<div class="amount_label">$</div>',
+	);
+	
+	$form['donation_amount']['items']['amount_field'] = array(
+		'#type' => 'textfield',
+		'#size' => 46,
+		'#weight' => 15,
+		'#description' => t('Please only enter numbers. Commas and periods are not allowed.'),
+	);
+	$form['donation_amount']['items']['namedonor'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Name as it will appear in donor listings.'),
+		'#weight' => 16,
+	);
+	
+	$form['donation_amount']['items']['anonymous'] = array(
+		'#type' => 'checkbox',
+		'#title' => t('Make my donation anonymous'),
+		'#required' => FALSE,
+		'#weight' => 17,
+	);
+	
+	$form['send_card'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Send a tribute<br />card'),
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE
+	);
+	$form['send_card']['items'] = array(
+		'#prefix' => '<div class="form-items billing-form-items">',
+		'#suffix' => '</div>'
+	);
+	$form['send_card']['items']['markup'] = array(
+		'#type' => 'markup',
+		'#value' => '<div class="form-item" style="width:100%;">'.t('Please send a tribute card acknowledging my gift to:').'</div>'
+	);
+	
+	$form['send_card']['items']['card_title'] = array(
+		'#type' => 'select',
+		'#title' => t('Title'),
+		'#options' => array(
+			''=>'',
+			'mr'=>t('Mr.'),
+			'ms'=>t('Ms.'),
+			'mrs'=>t('Mrs.'),
+			'dr'=>t('Dr.')
+		)
+	);
+	$form['send_card']['items']['card_first_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('First Name')
+	);
+	$form['send_card']['items']['card_middle_initial'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Middle Initial'),
+		'#size' => 10,
+		'#maxlength' => 10,
+		'#required' => FALSE
+	);
+	$form['send_card']['items']['card_last_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Last Name')
+	);
+	$form['send_card']['items']['card_suffix'] = array(
+		'#type' => 'select',
+		'#title' => t('Suffix'),
+		'#options' => array(
+			''=>'',
+			'sr'=>t('Sr.'),
+			'jr'=>t('Jr.'),
+			'iii'=>t('III'),
+			'iv'=>t('IV'),
+			'v'=>t('V')
+		)
+	);
+
+//	$form['send_card']['items']['card_recipient_name'] = array(
+//		'#type' => 'textfield',
+//		'#title' => t('Notification Recipient Name'),
+//		'#required' => FALSE		
+//	);
+	$form['send_card']['items']['card_street_1'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Address, Line 1'),
+		'#required' => FALSE
+	);
+	$form['send_card']['items']['card_street_2'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Line 2 (Optional)'),
+		'#required' => FALSE		
+	);
+	$form['send_card']['items']['card_city'] = array(
+		'#type' => 'textfield',
+		'#title' => t('City'),
+		'#required' => FALSE		
+	);		
+	$form['send_card']['items']['card_zip'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Zip/Postal Code'),
+		'#required' => FALSE
+	);
+	$form['send_card']['items']['card_country'] = array(
+		'#type' => 'select',
+		'#title' => t('Country'),
+		'#options' => array('' => '') + wistar_paypal_country_options(),
+		'#default_value' => 'US',
+		'#required' => FALSE
+	);
+	$form['send_card']['items']['card_state'] = array(
+		'#type' => 'select',
+		'#title' => t('State/Province'),
+		'#options' => array('' => '') + wistar_paypal_state_options_united_states(),
+		'#required' => FALSE
+	);
+	$form['send_card']['items']['card_occasion'] = array(
+		'#type' => 'textarea',
+		'#title' => t('Occasion/Message'),
+		'#required' => FALSE,
+		'#resizable' => FALSE
+	);
+	$form['billing'] = array(
+		'#type' => 'fieldset',
+		'#title' => 'Billing<br />Information',
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE
+	);
+	$form['billing']['items'] = array(
+		'#prefix' => '<div class="form-items billing-form-items">',
+		'#suffix' => '</div>'
+	);
+	$form['billing']['items'] = array_merge($form['billing']['items'], wistar_paypal_form_elements());
+	$form['donation'] = array(
+		'#type' => 'fieldset',
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE
+	);		
+	$form['donation']['items'] = array(
+		'#prefix' => '<div class="form-items donation-form-items">',
+		'#suffix' => '</div>'
+	);				
+	$form['donation']['items']['info_send'] = array(
+		'#type' => 'checkbox',
+		'#title' => t('Yes, I would like to receive emails from The Wistar Institute.'),
+		'#default_value' => 1,
+		'#required' => FALSE
+	);
+	$form['donation']['items']['donor_title'] = array(
+		'#type' => 'select',
+		'#title' => t('Spouse/Joint Donor Title'),
+		'#options' => array(
+			''=>'',
+			'mr'=>t('Mr.'),
+			'ms'=>t('Ms.'),
+			'mrs'=>t('Mrs.'),
+			'dr'=>t('Dr.')
+		)
+	);
+	$form['donation']['items']['donor_first_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Spouse/Joint Donor First Name')
+	);
+	$form['donation']['items']['donor_last_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Spouse/Joint Donor Last Name')
+	);
+	$form['donation']['items']['donor_suffix'] = array(
+		'#type' => 'select',
+		'#title' => t('Spouse/Joint Donor Suffix'),
+		'#options' => array(
+			''=>'',
+			'sr'=>t('Sr.'),
+			'jr'=>t('Jr.'),
+			'iii'=>t('III'),
+			'iv'=>t('IV'),
+			'v'=>t('V')
+		)
+	);	
+	$form['submit'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Payment Information >')
+	);		
+	if(isset($_GET['message'])) {
+		drupal_set_message(check_plain($_GET['message']));
+	}
+
+	return $form;
+}
+
+function wistar_donation_billing_giving_in_memory_form_validate($form, &$form_state){
+	if($form_state['values']['amount']=='custom'&&$form_state['values']['amount_field']<=9){
+		form_set_error('amount_field',t('Please enter a valid amount'));
+	}
+	else if($form_state['values']['amount']=='custom'&&is_numeric($form_state['values']['amount_field'])==false){
+		form_set_error('amount_field',t('Please enter a valid amount'));
+	}
+		
+}
+/**
+ * submit handler for billing form
+ */
+function wistar_donation_billing_giving_in_memory_form_submit(&$form, &$form_state) {
+	$values = $form_state['values'];
+	if($values['amount'] == 'custom'){
+		$values['amount'] = $values['amount_field'];
+	}
+	if(!empty($values['honor_gift_type'])){
+		$values['item_name'] = t('Giving').' '.$values['honor_gift_type'];
+		if(!empty($values['honor_gift_title'])) $values['item_name'] .= ' '.$values['honor_gift_title'];
+		if(!empty($values['honor_gift_first_name'])) $values['item_name'] .= ' '.$values['honor_gift_first_name'];
+		if(!empty($values['honor_gift_middle_initial'])) $values['item_name'] .= ' '.$values['honor_gift_middle_initial'];
+		if(!empty($values['honor_gift_last_name'])) $values['item_name'] .= ' '.$values['honor_gift_last_name'];
+		if(!empty($values['honor_gift_suffix'])) $values['item_name'] .= ' '.$values['honor_gift_suffix'];
+	}
+	$node = wistar_donation_save($values);
+
+	// if we have a valid donation node saved, hand off to paypal via get
+	if($node && $node->nid) {
+		$values['item_name'] = iconv("UTF-8", "ISO-8859-1", $values['item_name']);
+		$values['first_name'] = iconv("UTF-8", "ISO-8859-1", $values['first_name']);
+		$values['last_name'] = iconv("UTF-8", "ISO-8859-1", $values['last_name']);
+		//$values['item_number'] = $node->nid;
+		$values['H_PhoneNumber']=$values['phone'];
+		unset($values['op']);
+		unset($values['submit']);
+		unset($values['form_build_id']);
+		unset($values['form_token']);
+		unset($values['form_id']);
+		unset($values['image_url']);
+		unset($values['return']);
+		unset($values['cancel_return']);
+		unset($values['name_title']);
+		unset($values['donor_title']);
+		unset($values['donor_first_name']);
+		unset($values['donor_last_name']);
+		unset($values['donor_suffix']);
+		unset($values['namedonor']);
+		unset($values['anonymous']);
+		//unset($values['email']);
+		//drupal_goto( variable_get('wistar_paypal_payment_url', WISTAR_PAYPAL_URL) . '?' . http_build_query($values, '', '&'));
+		
+		
+		//$name=iconv("UTF-8", "ISO-8859-1", $values['first_name']).' '.iconv("UTF-8", "ISO-8859-1", $values['middle_initial']).' '.iconv("UTF-8", "ISO-8859-1", $values['last_name']);
+		//$values['name'] =$name;
+		//$values['Address']=$values['address1'].', '.$values['address2'];
+		/*$values['NAMETOSHIP'] =$name;
+		$values['login']=variable_get('wistar_payflow_login','');
+		$values['partner']=variable_get('wistar_payflow_partner','');
+		$values['type']='S';
+		$values['Address']=$values['address1'];
+		$values['billingAddress2']=$values['address2'];
+		$values['ADDRESSTOSHIP']=$values['address1'];
+		$values['CITYTOSHIP']=$values['city'];
+		$values['STATETOSHIP']=$values['state'];
+		$values['COUNTRYTOSHIP']=$values['country'];
+		$values['ZIPTOSHIP']=$values['zip'];
+		$values['custid'] = $node->nid;
+		
+		drupal_goto( 'https://payflowlink.paypal.com'. '?' . http_build_query($values, '', '&'));*/
+		
+		session_start();
+		$_SESSION['first_name']= iconv("UTF-8", "ISO-8859-1", $values['first_name']);
+		$_SESSION['last_name']= iconv("UTF-8", "ISO-8859-1", $values['last_name']);
+		$_SESSION['custid'] = $node->nid;
+		$_SESSION['phone']=$values['phone'];
+		$_SESSION['address']=$values['address1'];
+		$_SESSION['address2']=$values['address2'];
+		$_SESSION['city']=$values['city'];
+		$_SESSION['state']=$values['state'];
+		$_SESSION['country']=$values['country'];
+		$_SESSION['zip']=$values['zip'];
+		$_SESSION['email']=$values['email'];
+		$_SESSION['donation']=$values['amount'];
+		$_SESSION['donation_form']=TRUE;
+		drupal_goto('give/confirmation');
+		die();
+	} else {
+		drupal_set_message('An error occurred while processsing your donation.', 'error');
+	}
+}
+
+/**
+ * builder donation research form
+ */
+function wistar_donation_billing_research_form(&$form_state) {
+	global $base_url;
+	module_load_include('inc', 'wistar_donation');
+	module_load_include('inc', 'wistar_paypal');
+	$form = array();
+	// setup extra wistar_paypal elements
+	$form['return'] = array(
+	  '#type' => 'hidden',
+	  '#value' => $base_url . '/support-wistar/donate-online/thank-you',
+	  '#required' => TRUE
+	);		
+	$form['cancel_return'] = array(
+	  '#type' => 'hidden',
+	  '#value' => $base_url . '/support-wistar/donate-online?message=' . urlencode('Donation Cancelled'),
+	  '#required' => TRUE
+	);
+	$form['progress'] = array(
+		'#value' => wistar_theme_donation_progress_bar(0)		
+	);
+	$form['item_name'] = array(
+	  '#type' => 'hidden',
+	  '#value' => t('Give to an Area of Research'),
+	  '#required' => TRUE
+	);		
+	$form['cmd'] = array(
+	  '#type' => 'hidden',
+	  '#value' => '_donations',
+	  '#required' => TRUE		
+	);	
+	$node_give_research = node_load(variable_get('wistar_donation_give_research_node_id', ''));
+	if(!empty($node_give_research->field_body[0]['value'])){
+		$form['node_body_value'] = array(
+			'#type' => 'markup',
+			'#value' => $node_give_research->field_body[0]['value']
+		);
+	}
+
+	$form['directed_gifts'] = array(
+		'#type' => 'fieldset',
+		'#title' => 'Directed<br />Gifts',
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE
+	);
+	$form['directed_gifts']['items'] = array(
+		'#prefix' => '<div class="form-items billing-form-items">',
+		'#suffix' => '</div>'
+	);
+	
+	/* CHOOSE A PROGRAM select */
+	$choose_a_program_vocabulary = taxonomy_vocabulary_load(WISTAR_CHOOSE_A_PROGRAM_VID);
+	$taxonomy_form_all = taxonomy_form_all();
+	if(!empty($choose_a_program_vocabulary)){
+		$form['directed_gifts']['items']['program'] = array(
+			'#type' => 'select',
+			'#title' => t('Choose a program '),
+			'#options' => array('' => '') + $taxonomy_form_all[$choose_a_program_vocabulary->name],
+			'#weight' => -15,
+		);
+	}
+	$form['directed_gifts']['items']['program_other'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Enter other gift focus here.'),
+		'#weight' => -12,
+		'#required' => FALSE
+	);
+	/* CHOOSE A LAB select */
+	if(function_exists('views_get_view_result')){
+		$choose_a_lab = views_get_view_result('scientists', 'page_1');
+		if(!empty($choose_a_lab)){
+			$titles = array();
+			$titles[''] = '';
+			foreach($choose_a_lab as $view_item){
+				if(!empty($view_item->nid) && is_numeric($view_item->nid)){
+					$node = node_load($view_item->nid);
+					$titles[$node->nid] = $node->title;
+				}
+			}
+			$form['directed_gifts']['items']['or'] = array(
+				'#type' => 'markup',
+				'#value' => '<div id="edit-or-wrapper" class="form-item">'.t('OR<span> *</span>').'</div>',
+				'#weight' => -14,
+			);
+			$form['directed_gifts']['items']['lab'] = array(
+				'#type' => 'select',
+				'#title' => t('Choose a lab '),
+				'#options' => $titles,
+				'#weight' => -13,
+			);
+		}
+	}
+	
+	$amount_options = array(
+		'50' => '$50.00',
+		'100' => '$100.00',
+		'250' => '$250.00',
+		'500' => '$500.00',
+		'1000' => '$1000.00',
+		'custom' => t('Enter another amount'),
+	);
+	$form['donation_amount'] = array(
+		'#type' => 'fieldset',
+		'#title' => 'Donation<br />Amount',
+		'#collapsible' => FALSE,
+		'#collapsed' => FALSE
+	);
+	$form['donation_amount']['items'] = array(
+		'#prefix' => '<div class="form-items billing-form-items">',
+		'#suffix' => '</div>'
+	);
+	$form['donation_amount']['items']['amount'] = array(
+		'#type' => 'radios',
+		'#default_value' => '100',
+		'#options' => $amount_options,
+		'#required' => TRUE
+	);
+	$form['donation_amount']['items']['label_donation_amount']=array(
+		'#type'=>'markup',
+		'#value'=>'<div class="amount_label">$</div>',
+	);
+	
+	$form['donation_amount']['items']['amount_field'] = array(
+		'#type' => 'textfield',
+		'#size' => 46,
+		'#weight' => 15,
+		'#description' => t('Please only enter numbers. Commas and periods are not allowed.'),
+	);
+	$form['donation_amount']['items']['namedonor'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Name as it will appear in donor listings.'),
+		'#weight' => 16,
+	);
+	
+	$form['donation_amount']['items']['anonymous'] = array(
+		'#type' => 'checkbox',
+		'#title' => t('Make my donation anonymous'),
+		'#required' => FALSE,
+		'#weight' => 17,
+	);
+	
+	$form['billing'] = array(
+	  '#type' => 'fieldset',
+	  '#title' => 'Billing <br />Information',
+	  '#collapsible' => FALSE,
+	  '#collapsed' => FALSE
+	);
+	$form['billing']['items'] = array(
+		'#prefix' => '<div class="form-items billing-form-items">',
+		'#suffix' => '</div>'
+	);
+	$form['billing']['items'] = array_merge($form['billing']['items'], wistar_paypal_research_form_elements());
+	$form['donation'] = array(
+	  '#type' => 'fieldset',
+	//  '#title' => t('Donation'),
+	  '#collapsible' => FALSE,
+	  '#collapsed' => FALSE
+	);		
+	$form['donation']['items'] = array(
+		'#prefix' => '<div class="form-items donation-form-items">',
+		'#suffix' => '</div>'
+	);
+	$form['donation']['items']['info_send'] = array(
+		'#type' => 'checkbox',
+		'#title' => t('Yes, I would like to receive emails from The Wistar Institute.'),
+		'#default_value' => 1,
+		'#required' => FALSE
+	);
+	
+	$form['donation']['items']['donor_title'] = array(
+		'#type' => 'select',
+		'#title' => t('Spouse/Joint Donor Title'),
+		'#options' => array(
+			''=>'',
+			'mr'=>t('Mr.'),
+			'ms'=>t('Ms.'),
+			'mrs'=>t('Mrs.'),
+			'dr'=>t('Dr.')
+		),
+	);
+	$form['donation']['items']['donor_first_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Spouse/Joint Donor First Name')
+	);
+	$form['donation']['items']['donor_last_name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Spouse/Joint Donor Last Name')
+	);
+	$form['donation']['items']['donor_suffix'] = array(
+		'#type' => 'select',
+		'#title' => t('Spouse/Joint Donor Suffix'),
+		'#options' => array(
+			''=>'',
+			'sr'=>t('Sr.'),
+			'jr'=>t('Jr.'),
+			'iii'=>t('III'),
+			'iv'=>t('IV'),
+			'v'=>t('V')
+		),
+	);
+	$form['submit'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Payment Information >')
+	);		
+	if(isset($_GET['message'])) {
+		drupal_set_message(check_plain($_GET['message']));
+	}
+
+	return $form;
+}
+
+function wistar_donation_billing_research_form_validate($form, &$form_state){
+	if($form_state['values']['amount']=='custom'&&$form_state['values']['amount_field']<=0){
+		form_set_error('amount_field',t('Please enter a valid amount'));
+	}
+	else if($form_state['values']['amount']=='custom'&&is_numeric($form_state['values']['amount_field'])==false){
+		form_set_error('amount_field',t('Please enter a valid amount'));
+	}
+	if(empty($form_state['values']['program'])&&empty($form_state['values']['lab'])){
+		form_set_error('',t('Please choose Program or Lab'));
+	}
+}
+
+/**
+ * submit handler for billing form
+ */
+function wistar_donation_billing_research_form_submit(&$form, &$form_state) {
+	$values = $form_state['values'];
+	if(!empty($values['program']) && empty($values['program_other'])){
+		if(is_numeric($values['program']) && function_exists('taxonomy_get_term')){
+			$term = taxonomy_get_term($values['program']);
+			if(!empty($term->name)) $values['item_name'] .= ': '.$term->name;
+		}
+	}
+	if(!empty($values['program_other'])){
+		$values['item_name'] .= ': '.$values['program_other'];
+	}
+	if(!empty($values['lab'])){
+		if(is_numeric($values['lab'])){
+			$get_lab_node = node_load($values['lab']);
+			if(!empty($get_lab_node->title)) $values['item_name'] .= ': '.$get_lab_node->title;
+		}
+	}
+	if($values['amount'] == 'custom'){
+		$values['amount'] = $values['amount_field'];
+	}
+	if($values['anonymous']=='1'){
+		$values['first_name'] = t('Anonymous');
+		$values['last_name'] = t('Anonymous');
+		$values['donor_first_name'] = t('Anonymous');
+		$values['donor_last_name'] = t('Anonymous');
+	}
+	$node = wistar_donation_save($values);
+	
+	// if we have a valid donation node saved, hand off to paypal via get
+	if(!empty($node->nid)){
+		$values['item_name'] = iconv("UTF-8", "ISO-8859-1", $values['item_name']);
+		$values['first_name'] = iconv("UTF-8", "ISO-8859-1", $values['first_name']);
+		$values['last_name'] = iconv("UTF-8", "ISO-8859-1", $values['last_name']);
+		//$values['item_number'] = $node->nid;
+		$values['H_PhoneNumber']=$values['phone'];
+		unset($values['op']);
+		unset($values['submit']);
+		unset($values['form_build_id']);
+		unset($values['form_token']);
+		unset($values['form_id']);
+		unset($values['image_url']);
+		unset($values['return']);
+		unset($values['cancel_return']);
+		unset($values['name_title']);
+		unset($values['donor_title']);
+		unset($values['donor_first_name']);
+		unset($values['donor_last_name']);
+		unset($values['donor_suffix']);
+		unset($values['namedonor']);
+		unset($values['anonymous']);
+		//unset($values['email']);
+		//$redirect_url = variable_get('wistar_paypal_payment_url', WISTAR_PAYPAL_URL) . '?' . http_build_query($values, '', '&');
+		//drupal_goto($redirect_url);
+		//$name=iconv("UTF-8", "ISO-8859-1", $values['first_name']).' '.iconv("UTF-8", "ISO-8859-1", $values['middle_initial']).' '.iconv("UTF-8", "ISO-8859-1", $values['last_name']);
+		//$values['name'] =$name;
+		//$values['Address']=$values['address1'].', '.$values['address2'];
+		/*$values['NAMETOSHIP'] =$name;
+		$values['login']=variable_get('wistar_payflow_login','');
+		$values['partner']=variable_get('wistar_payflow_partner','');
+		$values['type']='S';
+		$values['Address']=$values['address1'];
+		$values['billingAddress2']=$values['address2'];
+		$values['ADDRESSTOSHIP']=$values['address1'];
+		$values['CITYTOSHIP']=$values['city'];
+		$values['STATETOSHIP']=$values['state'];
+		$values['COUNTRYTOSHIP']=$values['country'];
+		$values['ZIPTOSHIP']=$values['zip'];
+		$values['custid'] = $node->nid;
+		
+		drupal_goto( 'https://payflowlink.paypal.com'. '?' . http_build_query($values, '', '&'));*/
+		session_start();
+		$_SESSION['first_name']= iconv("UTF-8", "ISO-8859-1", $values['first_name']);
+		$_SESSION['last_name']= iconv("UTF-8", "ISO-8859-1", $values['last_name']);
+		$_SESSION['custid'] = $node->nid;
+		$_SESSION['phone']=$values['phone'];
+		$_SESSION['address']=$values['address1'];
+		$_SESSION['address2']=$values['address2'];
+		$_SESSION['city']=$values['city'];
+		$_SESSION['state']=$values['state'];
+		$_SESSION['country']=$values['country'];
+		$_SESSION['zip']=$values['zip'];
+		$_SESSION['email']=$values['email'];
+		$_SESSION['donation']=$values['amount'];
+		$_SESSION['donation_form']=TRUE;
+		$_SESSION['program']=$values['program'];
+		$_SESSION['lab']=$values['lab'];
+		drupal_goto('give/confirmation');
+		die();
+	} else {
+		drupal_set_message('An error occurred while processsing your donation.', 'error');
+	}
+}
+
+/**
+ * paypal return callback handler
+ */
+function wistar_donation_return_callback() {
+//pa($GLOBALS,1);
+	// if we get back here, check for an item number (nid) and update if necessary
+	/*if(isset($_REQUEST['item_number']) && is_numeric($_REQUEST['item_number'])) {
+		$node = node_load($_REQUEST['item_number']);
+		wistar_donation_ipn_update($node);
+	}*/
+	if(isset($_POST['CUSTID'])){
+		$node = node_load($_POST['CUSTID']);
+		wistar_donation_ipn_update($node);
+	}
+	return theme('wistar_donation_result');
+	
+} 
+
+/**
+ * paypal cancel callback handler
+ */
+function wistar_donation_cancel_callback() {
+	return theme('wistar_donation_billing');
+} 
+
+/**
+ * IPN update function for this type
+ */
+function wistar_donation_ipn_update(&$node) {
+	if(isset($_POST['RESULT'])&&$_POST['RESULT']==0) {
+		$node->field_payment_status[0]['value'] ='Completed';
+	}
+	
+	
+	/*if(isset($_REQUEST['payment_status'])) {
+		$node->field_payment_status[0]['value'] = $_REQUEST['payment_status'];
+	}
+	
+	if(isset($_REQUEST['tx'])) {
+		// why can't these keys be consistent?
+		$node->field_transaction_id[0]['value'] = $_REQUEST['tx'];		
+	}
+
+	if(isset($_REQUEST['st'])) {
+		// why can't these keys be consistent?	
+		$node->field_payment_status[0]['value'] = $_REQUEST['st'];
+	}*/
+	
+	return node_save($node);
+}
+
+/**
+ * creates a new donation node from the donation form submission
+ */
+function wistar_donation_save($values){
+	$node = new stdClass();
+	$node->name = 'wistar';	
+	$node->type = 'donation';
+	// auto nodetitle will take over, set a default
+	$node->title = t('Donation');
+	$node->field_amount[0]['value'] = $values['amount'];
+	$node->field_purpose[0]['value'] = $values['purpose'];
+	$node->field_send_info[0]['value'] = $values['info_send'];
+	$node->field_info[0]['value'] = $values['info'];
+	if(!empty($values['phone'])) $node->field_donation_phone[0]['value'] = $values['phone_type'].': '.$values['phone'];
+	if(!empty($values['program_other'])) $node->field_program_other[0]['value'] = $values['program_other'];
+	$node->field_donation_form[0]['value'] = $values['item_name'];
+	if(!empty($values['donor_title'])) $node->field_donor_title[0]['value'] = $values['donor_title'];
+	if(!empty($values['donor_first_name'])) $node->field_donor_first_name[0]['value'] = $values['donor_first_name'];
+	if(!empty($values['donor_last_name'])) $node->field_donor_last_name[0]['value'] = $values['donor_last_name'];
+	if(!empty($values['donor_suffix'])) $node->field_donor_suffix[0]['value'] = $values['donor_suffix'];
+	if(!empty($values['anonymous'])) $node->field_anonymous[0]['value'] = $values['anonymous'];
+	if(!empty($values['middle_initial'])) $node->field_donation_middle_initial[0]['value'] = $values['middle_initial'];
+	if(!empty($values['honor_gift_type'])) $node->field_honor_gift_type[0]['value'] = $values['honor_gift_type'];
+	if(!empty($values['honor_gift_title'])) $node->field_honor_gift_title[0]['value'] = $values['honor_gift_title'];
+	if(!empty($values['honor_gift_first_name'])) $node->field_honor_gift_first_name[0]['value'] = $values['honor_gift_first_name'];
+	if(!empty($values['honor_gift_middle_initial'])) $node->field_honor_gift_middle_initial[0]['value'] = $values['honor_gift_middle_initial'];
+	if(!empty($values['honor_gift_last_name'])) $node->field_honor_gift_last_name[0]['value'] = $values['honor_gift_last_name'];
+	if(!empty($values['honor_gift_suffix'])) $node->field_honor_gift_suffix[0]['value'] = $values['honor_gift_suffix'];
+	if(!empty($values['card_title'])) $node->field_card_title[0]['value'] = $values['card_title'];
+	if(!empty($values['card_first_name'])) $node->field_card_first_name[0]['value'] = $values['card_first_name'];
+	if(!empty($values['card_middle_initial'])) $node->field_card_middle_initial[0]['value'] = $values['card_middle_initial'];
+	if(!empty($values['card_last_name'])) $node->field_card_last_name[0]['value'] = $values['card_last_name'];
+	if(!empty($values['card_suffix'])) $node->field_card_suffix[0]['value'] = $values['card_suffix'];
+	if(!empty($values['card_street_1'])) $node->field_card_street_1[0]['value'] = $values['card_street_1'];
+	if(!empty($values['card_street_2'])) $node->field_card_street_2[0]['value'] = $values['card_street_2'];
+	if(!empty($values['card_city'])) $node->field_card_city[0]['value'] = $values['card_city'];
+	if(!empty($values['card_state'])) $node->field_card_state[0]['value'] = $values['card_state'];
+	if(!empty($values['card_zip'])) $node->field_card_zip[0]['value'] = $values['card_zip'];
+	if(!empty($values['card_country'])) $node->field_card_country[0]['value'] = $values['card_country'];
+	if(!empty($values['card_occasion'])) $node->field_card_occasion[0]['value'] = $values['card_occasion'];
+	if(!empty($values['card_middle_initial'])) $node->field_card_middle_initial[0]['value'] = $values['card_middle_initial'];
+	if(!empty($values['name_title'])) $node->field_name_title[0]['value'] = $values['name_title'];
+	if(!empty($values['first_name'])) $node->field_first_name[0]['value'] =$values['first_name'];
+	if(!empty($values['last_name'])) $node->field_last_name[0]['value'] = $values['last_name'];
+	if(!empty($values['name_suffix'])) $node->field_name_suffix[0]['value'] = $values['name_suffix'];
+	$node->field_address[0]['value'] = '';
+	if(!empty($values['country'])) $node->field_address[0]['value'] .= $values['country'];
+	if(!empty($values['address1'])) $node->field_address[0]['value'] .=' '.$values['address1'];
+	if(!empty($values['address2'])) $node->field_address[0]['value'] .= ' '.$values['address2'];
+	if(!empty($values['city'])) $node->field_city[0]['value'] = $values['city'];
+	if(!empty($values['state'])) $node->field_state[0]['value'] = $values['state'];
+	if(!empty($values['zip'])) $node->field_zip[0]['value'] = $values['zip'];
+	if(!empty($values['email'])) $node->field_email[0]['value'] = $values['email'];
+	if(!empty($values['namedonor'])) $node->field_name_donor[0]['value'] = $values['namedonor'];
+	$node->field_payment_status[0]['value'] = 'Pending';
+	if(!empty($values['program'])){
+		if(is_numeric($values['program']) && function_exists('taxonomy_get_term')){
+			$node->taxonomy[$values['program']] = taxonomy_get_term($values['program']);
+		}
+	}
+	if(!empty($values['lab'])){
+		if(is_numeric($values['lab'])){
+			$lab_node = node_load($values['lab']);
+			if(!empty($lab_node->title)) $node->field_donation_lab[0]['value'] = $lab_node->title;
+			$node->field_program_other[0]['value']='';
+			
+		}
+	}
+	if($node = node_submit($node)){
+		if($node->validated){
+			node_save($node);	
+			return $node;
+		}
+	}
+	
+	return false;
+}
+
+/**
+ * log function
+ */
+function wistar_log($log) {
+	if(is_array($log)) {
+		file_put_contents('/tmp/ipn.log', print_r($log, 1) . "\n", FILE_APPEND);
+	}
+	else {
+		file_put_contents('/tmp/ipn.log', $log . "\n", FILE_APPEND);
+	}
+}
+
+function wistar_donation_billing_research_page() {
+	$node = node_load(variable_get('wistar_donation_give_research_node_id', ''));
+	$donation_billing_research_form = drupal_get_form('wistar_donation_billing_research_form');
+	$output = theme('wistar_donation_billing_research', $node, $donation_billing_research_form);
+	return $output;
+}
+
+
+
+function wistar_donation_confirmation_page($form,$form_state){
+	if(!isset($_SESSION['donation_form'])){
+		drupal_goto('give');
+	}
+	$node=node_load($_SESSION['custid']);
+	module_load_include('inc', 'wistar_paypal');
+	$form = array(); 
+
+	if(!empty($node->field_honor_gift_type[0]['value'])){
+		$form['honor_gift'] = array(
+			'#type' => 'fieldset',
+			'#title' => t('Purpose of Donation'),
+			'#collapsible' => FALSE,
+			'#collapsed' => FALSE
+		);
+		$form['honor_gift']['items'] = array(
+			'#prefix' => '<div class="form-items billing-form-items">',
+			'#suffix' => '</div>'
+		);
+		$form['honor_gift']['items']['honor_gift_type'] = array(
+			'#type' => 'select',
+			'#title' => t('Purpose of Donation'),
+			'#options' => array(
+				''=>'',
+				'In Memory of'=>t('In Memory of'),
+				'In Honor of'=>t('In Honor of')
+			),
+			'#required' => TRUE,
+			'#default_value'=>$node->field_honor_gift_type[0]['value'],
+		);
+		$form['honor_gift']['items']['honor_gift_title'] = array(
+			'#type' => 'select',
+			'#title' => t('Title'),
+			'#options' => array(
+				''=>'',
+				'mr'=>t('Mr.'),
+				'ms'=>t('Ms.'),
+				'mrs'=>t('Mrs.'),
+				'dr'=>t('Dr.')
+			),
+			'#default_value'=>$node->field_honor_gift_title[0]['value'],
+		);
+		$form['honor_gift']['items']['honor_gift_first_name'] = array(
+			'#type' => 'textfield',
+			'#title' => t('First Name'),
+			'#default_value'=>$node->field_honor_gift_first_name[0]['value'],
+		);
+		$form['honor_gift']['items']['honor_gift_middle_initial'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Middle Initial'),
+			'#size' => 10,
+			'#maxlength' => 10,
+			'#required' => FALSE,
+			'#default_value'=>$node->field_honor_gift_middle_initial[0]['value'],
+		);
+		$form['honor_gift']['items']['honor_gift_last_name'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Last Name'),
+			'#default_value'=>$node->field_honor_gift_last_name[0]['value'],
+		);
+		$form['honor_gift']['items']['honor_gift_suffix'] = array(
+			'#type' => 'select',
+			'#title' => t('Suffix'),
+			'#options' => array(
+				''=>'',
+				'sr'=>t('Sr.'),
+				'jr'=>t('Jr.'),
+				'iii'=>t('III'),
+				'iv'=>t('IV'),
+				'v'=>t('V')
+			),
+			'#default_value'=>$node->field_honor_gift_suffix[0]['value'],
+		);
+	
+	}
+	if(!empty($node->taxonomy)||!empty($node->field_donation_lab[0]['value'])){
+		/* CHOOSE A PROGRAM select */
+		$form['choose'] = array(
+			'#type' => 'fieldset',
+			'#title' => t('Choose Research or Lab'),
+			'#collapsible' => FALSE,
+			'#collapsed' => FALSE
+		);
+		$choose_a_program_vocabulary = taxonomy_vocabulary_load(WISTAR_CHOOSE_A_PROGRAM_VID);
+		$taxonomy_form_all = taxonomy_form_all();
+		if(!empty($choose_a_program_vocabulary)){
+			$form['choose']['directed_gifts']['items']['program'] = array(
+				'#type' => 'select',
+				'#title' => t('Choose a program '),
+				'#options' => array('' => '') + $taxonomy_form_all[$choose_a_program_vocabulary->name],
+				'#weight' => -15,
+				'#default_value'=>$_SESSION['program'],
+			);
+		}
+		//pa($node->field_program_other,1);
+		$value_other='';
+		if(!empty($node->field_program_other)){
+			$value_other=$node->field_program_other[0]['value'];
+		}
+		$form['choose']['directed_gifts']['items']['program_other'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Enter other gift focus here.'),
+			'#weight' => -12,
+			'#required' => FALSE,
+			'#default_value'=>$value_other,
+		);
+		
+		/* CHOOSE A LAB select */
+		if(function_exists('views_get_view_result')){
+			$choose_a_lab = views_get_view_result('scientists', 'page_1');
+			if(!empty($choose_a_lab)){
+				$titles = array();
+				$titles[''] = '';
+				foreach($choose_a_lab as $view_item){
+					if(!empty($view_item->nid) && is_numeric($view_item->nid)){
+						$node = node_load($view_item->nid);
+						$titles[$node->nid] = $node->title;
+					}
+				}
+				$form['choose']['directed_gifts']['items']['or'] = array(
+					'#type' => 'markup',
+					'#value' => '<div id="edit-or-wrapper" class="form-item">'.t('OR<span> *</span>').'</div>',
+					'#weight' => -14,
+				);
+				$form['choose']['directed_gifts']['items']['lab'] = array(
+					'#type' => 'select',
+					'#title' => t('Choose a lab '),
+					'#options' => $titles,
+					'#weight' => -13,
+					'#default_value'=>$_SESSION['lab']
+				);
+			}
+		}
+	}
+	
+	$form['form_fieldset']=array(
+		'#type'=>'fieldset',
+		'#title'=>'Payment Information Page ',
+	);
+	$form['form_fieldset']['first_name']=array(
+		'#type'=>'textfield',
+		'#title'=>'First Name',
+		'#required'=>TRUE,
+		'#default_value'=>$_SESSION['first_name'],
+	);
+	$form['form_fieldset']['last_name']=array(
+		'#type'=>'textfield',
+		'#title'=>'Last Name',
+		'#required'=>TRUE,
+		'#default_value'=>$_SESSION['last_name'],
+	);
+	$form['form_fieldset']['address']=array(
+		'#type'=>'textfield',
+		'#title'=>'Address,Line 1',
+		'#required'=>TRUE,
+		'#default_value'=>$_SESSION['address'],
+	);
+	$form['form_fieldset']['billingAddress2']=array(
+		'#type'=>'textfield',
+		'#title'=>'Address,Line 2',
+		'#default_value'=>$_SESSION['address2'],
+	);
+	$form['form_fieldset']['city']=array(
+		'#type'=>'textfield',
+		'#title'=>'City',
+		'#required'=>TRUE,
+		'#default_value'=>$_SESSION['city'],
+	);
+	if($_SESSION['country']=='US'){	
+		$values=array('' => '')+wistar_paypal_state_options_united_states();
+		$form['form_fieldset']['state']=array(
+			'#type'=>'select',
+			'#title'=>'State',
+			'#required'=>TRUE,
+			'#options'=>$values,
+			'#default_value'=>$_SESSION['state'],
+		);
+	}
+	$form['form_fieldset']['country']=array(
+		'#type'=>'textfield',
+		'#title'=>'Country',
+		'#required'=>TRUE,
+		'#default_value'=>$_SESSION['country'],
+	);
+	$form['form_fieldset']['zip']=array(
+		'#type'=>'textfield',
+		'#title'=>'Zip',
+		'#required'=>TRUE,
+		'#default_value'=>$_SESSION['zip'],
+	);
+	$form['form_fieldset']['email']=array(
+		'#type'=>'textfield',
+		'#title'=>'Email',
+		'#required'=>TRUE,
+		'#default_value'=>$_SESSION['email'],
+	);
+	$form['form_fieldset']['amount']=array(
+		'#type'=>'textfield',
+		'#title'=>'Donation amount',
+		'#required'=>TRUE,
+		'#default_value'=>$_SESSION['donation'],
+	);
+	$form['submit']=array(
+		'#type'=>'submit',
+		'#value'=>t('Click here to Continue'),
+		'#submit'=>array('wistar_donation_confirmation_page_submit'),
+	);
+	$form['cancel']=array(
+		'#type'=>'submit',
+		'#value'=>t('Cancel'),
+		'#submit'=>array('wistar_donation_confirmation_page_cancel'),
+	);
+	
+	$form['markup1']=array(
+		'#type'=>'markup',
+		'#prefix'=>'<div class="text1">',
+		'#suffix'=>'</div>',
+		'#value'=>t('Donations to the Wistar institute are tax deductible to the extent allowed by law.'),
+	);
+	$form['markup2']=array(
+		'#type'=>'markup',
+		'#prefix'=>'<div class="text2">',
+		'#suffix'=>'</div>',
+		'#value'=>t('The official registration and financial information of The Wistar Institute of Anatomy and Biology may be obtained from the Pennsylvania Department of State by calling toll free, within Pennsylvania, (800) 732-0999. Registration does not imply endorsement.'),
+	);
+	$form['markup3']=array(
+		'#type'=>'markup',
+		'#prefix'=>'<div class="text3">',
+		'#suffix'=>'</div>',
+		'#value'=>t('*** Please report all problems with this online donation process to the Wistar Institute Development Office at (215) 898-3830. Any and all disputed credit card charges should be resolved through this department. While The Wistar Institute does not take responsibility for incorrect entries or banking errors which are beyond our control, we will assist in resolving any issues related to credit card donations made through this page. ***'),
+	);
+	return $form;
+}
+
+function wistar_donation_confirmation_page_submit($form,$form_state){
+	$values = $form_state['values'];
+	$values['custid'] =$_SESSION['custid'];		
+	$values['login']=variable_get('wistar_payflow_login','');
+	$values['partner']=variable_get('wistar_payflow_partner','');
+	$values['type']='S';
+	$node=node_load($values['custid']);
+	if(!empty($node->field_honor_gift_type[0]['value'])){
+		$node->field_honor_gift_type[0]['value']=$values['honor_gift_type'];
+		$node->field_honor_gift_title[0]['value']=$values['honor_gift_title'];
+		$node->field_honor_gift_first_name[0]['value']=$values['honor_gift_first_name'];
+		$node->field_honor_gift_middle_initial[0]['value']=$values['honor_gift_middle_initial'];
+		$node->field_honor_gift_last_name[0]['value']=$values['honor_gift_last_name'];
+		$node->field_honor_gift_suffix[0]['value']=$values['honor_gift_suffix'];
+	}
+	
+	if(!empty($node->taxonomy)||!empty($node->field_donation_lab[0]['value'])){
+		$node->taxonomy=array();
+		if(!empty($values['program'])){
+			if(is_numeric($values['program']) && function_exists('taxonomy_get_term')){
+				$node->taxonomy[$values['program']] = taxonomy_get_term($values['program']);
+				$node->field_donation_lab[0]['value']='';
+			}
+		}
+		if(!empty($values['lab'])){
+			if(is_numeric($values['lab'])){
+				$lab_node = node_load($values['lab']);
+				if(!empty($lab_node->title)) $node->field_donation_lab[0]['value'] = $lab_node->title;
+			}
+		}
+		$node->field_program_other[0]['value']='';
+	}
+	if(!empty($values['program_other'])){
+		$node->field_program_other[0]['value']=$values['program_other'];
+	}
+	$node->field_first_name[0]['value']=$values['first_name'];
+	$node->field_last_name[0]['value']=$values['last_name'];
+	$node->field_address[0]['value']=$values['address'];
+	$node->field_city[0]['value']=$values['city'];
+	$node->field_state[0]['value']=$values['state'];
+	$node->field_country[0]['value']=$values['country'];
+	$node->field_zip[0]['value']=$values['zip'];
+	$node->field_email[0]['value']=$values['email'];
+	$node->field_amount[0]['value']=$values['amount'];
+	node_save($node);
+	
+	drupal_goto( 'https://payflowlink.paypal.com'. '?'.http_build_query($values, '', '&'));
+}
+
+function wistar_donation_confirmation_page_cancel($form,&$form_state){
+	$form_state['redirect'] = array('give');
+}

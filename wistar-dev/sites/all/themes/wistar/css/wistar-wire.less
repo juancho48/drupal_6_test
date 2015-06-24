@@ -1,0 +1,188 @@
+#wistar_wire_container {
+	#wistar_wire_elements {	
+		.clearfix;
+	
+		.with_borders {
+			border-top: 3px solid @teal;
+			background: url('../images/icons/dark_blue_plus.jpg') right top no-repeat;			
+		}		
+	
+		.main_column {
+			width: 645px;
+			float: left;
+			min-height: 200px;
+			background: #FFFFFF;
+
+			.post_container {
+				.clearfix;
+				background: #FFFFFF;
+				border-bottom: 1px solid #F0F0F0;
+				margin: 35px 0 0 0;
+				padding: 0 28px 35px 28px;
+
+				.post_elements {
+					.clearfix;
+
+					.post_image {					
+						width: 130px;
+						float: left;
+					}
+					
+					.post_content {
+						.clearfix;
+						margin-left: 158px;
+						
+						h4 {
+							font-family: "Verdana";
+							font-size: 19px;
+							color: #616f72;
+							margin-bottom: 10px;
+							a {
+								text-decoration: none;
+								color: inherit;
+							}
+						}
+						
+						.post_meta {
+							font-family: "DINMedium";
+							color: @teal;
+							font-size: 14px;
+							text-transform: uppercase;
+							
+						}
+						
+						.post_teaser {
+							margin-top: 20px;
+							color: #444444;
+							line-height: 20px;
+							font-size: 13px;
+							font-family: "Verdana";
+						}
+						
+						.more {
+							color: @teal;
+							
+							.more_arrow {
+								color: #b3b5b5;
+							}
+						}
+					}
+				}
+			}
+			
+			.microsite_post {
+				.post_elements {
+					.post_image {
+						width: 351px;
+						
+						a.imagecache-microsite_blog_image {
+							display: block;
+						}
+						
+						.post_share {
+							margin-top: -27px;
+							margin-bottom: 20px;
+						}
+					}
+				
+					.post_content {
+						.clearfix;
+						margin-left: 0;
+												
+						h4 {
+							a {
+								font-family: "Verdana";
+								font-size: 19px;
+								color: #616f72;
+								margin-bottom: 10px;
+								text-decoration: none;
+							}
+						}
+					
+						.post_meta {
+							font-family: "DINMedium";
+							color: @teal;
+							font-size: 14px;
+							text-transform: uppercase;						
+						}
+					
+						.post_teaser {
+							margin-top: 20px;
+							color: #444444;
+							line-height: 20px;
+							font-size: 13px;
+							font-family: "Verdana";
+						}
+					
+						.more {
+							color: @teal;
+						
+							.more_arrow {
+								color: #b3b5b5;
+							}
+						}
+					}
+				} 
+			} 
+			
+			.first {
+				margin-top: 25px;
+			}
+			
+			.wistar_wire_footer {
+				text-align: center;
+				padding: 10px;
+				
+				.see-all-link {
+					font-family: "DINMedium";
+					font-size: 12px;
+					text-decoration: none;
+					text-transform: uppercase;
+					color: #047892;
+					
+					.more_arrow {
+						color: #b3b5b5;
+					}
+				}
+			}		
+		}
+			
+		.side_column {
+			width: 315px;
+			float: left;
+			margin-left: 15px;
+			min-height: 200px;	
+			padding-top: 2px;	
+			
+			.quicktabs_wrapper {
+				background: #FFFFFF;
+				
+				.quicktabs_tabs {
+					clearfix;
+				}
+			}
+			
+			li {
+				.qt_tab {
+					text-decoration: none;
+					display: inline-block;
+					font-family: "DINMedium";
+					background: #ccced1; 
+					color: @heading_gray;
+					text-transform: uppercase;
+					font-size: 14px;
+					padding: 7px 20px;
+					border-top: 2px solid #ccced1;
+				}	
+			}
+			
+			li.active {
+				.qt_tab {
+					.with_borders;
+					padding-right: 40px;
+					background: url('../images/icons/dark_blue_plus.jpg') right top no-repeat;				
+				}	
+			}
+		}	
+	}
+}

@@ -1,0 +1,4 @@
+name		= Wistar Scientists
+description	= Creates the 'Find a Scientist' list
+package		= Wistar
+core		= 6.x

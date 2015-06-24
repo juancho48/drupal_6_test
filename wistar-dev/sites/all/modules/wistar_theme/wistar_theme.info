@@ -1,0 +1,4 @@
+name = "Wistar Theme"
+description = "Theming module"
+package = "Wistar"
+core = 6.x

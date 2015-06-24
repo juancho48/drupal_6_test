@@ -1,0 +1,404 @@
+.view-blog {	
+	#edit-preview {
+		display: none;
+	}
+		
+	#comments {
+		.clearfix;
+		padding: 30px 0;
+		margin: 20px 0;
+		border-top: 1px solid #efefef;
+		border-bottom: 1px solid #efefef;
+
+		.comment_count {
+			font-family: "DINMedium";
+			width: 125px;
+			color: @orange;
+			font-size: 15px;
+			text-transform: uppercase;
+			float: left;
+		}
+		
+		.comment {
+			padding-left: 125px;
+			
+			.comment_title {
+				margin-bottom: 20px;
+				line-height: 18px;
+							
+				.comment_author {
+					font-size: 16px;
+					color: #000;
+					font-family: "DINMedium";					
+					
+					a {
+						color: #000;
+						text-decoration: none;
+					}
+				}
+				
+				.comment_datetime {
+					color: #a6a6a6;
+					font-size: 14px;
+					font-family: "DINMedium";										
+				}
+			}
+			
+			.comment_body {
+				color: #404040;
+				font-size: 13px;
+				line-height: 18px;
+				margin-bottom: 20px;			
+			}
+		}
+	}
+	
+	#comment_form {
+		.clearfix;	
+		.comment_form_label {
+			font-family: "DINMedium";
+			width: 125px;
+			color: @orange;
+			font-size: 15px;
+			text-transform: uppercase;
+			float: left;		
+		}
+		
+		form {
+			padding-left: 125px;
+			.clearfix;
+			
+			input, textarea {
+				border: 2px solid #e8e8e8;
+				padding: 5px;
+				width: 335px;
+				margin-bottom: 2px;
+			}
+			
+			label {
+				color: #a6a6a6;
+				position: absolute;
+				top: 10px;
+				left: 10px;
+			}
+			
+			.form-text {
+				margin-bottom: 10px;
+			}
+			
+			.form-item {
+				margin: 0;
+				padding: 0;
+				position: relative;
+				
+				a {
+					display: block;
+					font-size: 16px;
+					color: #000;
+					font-family: "DINMedium";					
+					color: #000;
+					text-decoration: none; 
+				}
+			}
+			
+			#edit-submit {
+				.ir;
+				background: url('../images/layout/comment_submit.jpg') transparent;
+				height: 31px;
+				width: 179px;
+				float: right;
+				border: 0;
+			}
+		}
+		
+		fieldset {
+			display: none;
+		}
+		
+		.tips, p {
+			display: none;
+		}
+	}
+	
+	.attachment-before {
+		float: right;
+		width: 235px;
+		padding-left:20px;
+		background:#fff;
+
+		h2 {
+
+			color: @heading_gray;
+			text-transform: uppercase;
+			font-size: 16px;
+			padding: 7px 0;
+			border-top: 3px solid @orange;				
+			border-bottom: 1px solid #efefef;		
+			margin-bottom: 20px;
+		}
+		
+		.view-content {
+			width: 235px;
+			margin-bottom: 20px;
+			
+			li {
+				list-style-type: none;
+				list-style-image: none;
+				padding: 0;
+				margin: 0;
+				line-height: 20px;
+				font-size: 12px; 
+				color: #888888;
+				font-family: "DINMedium";
+			
+				a {
+					text-decoration: none;
+					color: @orange;
+					font-size: 13px;
+
+					:hover {
+						text-decoration: underline;
+					}
+				}
+			}		
+		}
+	}
+	
+	.view-content {	
+		.views-row {
+			margin-bottom: 50px;
+			
+			.views-field-title {
+				font-size: 21px;
+				color: @dark_blue;
+				text-transform: uppercase;
+				line-height: 26px;
+				border-bottom: 1px solid #efefef;
+				margin-bottom: 5px;
+				padding-bottom: 7px;
+				a {
+					text-decoration: none;	
+					color: @dark_blue;
+				}
+			}
+	
+			.meta {
+				color: #a6a6a6;
+				line-height: 16px;
+				font-size: 12px;
+			}
+	
+			.views-field-nid {
+				position: relative;			
+	
+				.field-content {
+					width: 130px;
+					position: absolute;
+					right: 0;
+					top: 0;
+					
+					.post_share {
+						margin: 0;
+					}					
+				}
+			}
+	
+			.views-field-field-post-image-fid {
+				a {
+					margin-bottom: 15px;
+					display: block;
+
+					img {
+						display: block;
+					}
+				}
+			}
+	
+			.views-field-field-post-date-value {
+				.meta;
+				text-transform: uppercase;
+				font-family: "DINBold";
+			}
+	
+			.views-field-name {
+				.meta;
+				font-size: 13px;
+				margin-bottom: 25px;
+		
+				span {
+					color: @teal;
+				}
+			}
+	
+			.view-field-field-post-image {
+				margin-right: 15px;
+				margin-bottom: 5px;
+        float:left;
+			}
+	
+			.views-field-field-teaser-value {
+				color: #404040;
+				font-size: 13px;
+				line-height: 18px;
+			
+				.post-image {
+					.blog-image-alt{
+						clear:both;
+						margin:0;
+						padding:10px 0 15px;
+					}
+				}
+				.im-left{
+					float:left;
+				}
+				.im-right{
+					float:right;
+				}
+				img{
+					color:#838383;
+					font-style: italic;
+				}
+			}
+		
+			.views-field-view-node {
+				font-size: 13px;
+				line-height: 18px;
+				margin-bottom: 10px;
+			
+				span {
+					color: @orange;
+					font-family: "DINBold";
+					:after {
+						content: ' >';
+					}
+					a {
+						text-transform: uppercase;
+						color: #000000;
+						text-decoration: none;
+					}	
+				}		
+			}
+		}	
+		
+		.views-field-tid {
+			color: #a6a6a6;
+			font-size: 13px;
+			a {
+				color: @orange;
+				text-decoration: none;
+			}
+		}		
+	}
+	
+	.pagination {
+		position: relative;
+		div {
+			width: 200px;
+			position: absolute;
+			
+			a {
+				font-size: 14px;
+				text-transform: uppercase;
+				color: #000000;
+				display: block;
+				font-family: "DINMedium";
+				text-decoration: none;
+			
+				.more_arrow {
+					color: @teal;
+				}
+			}
+		}
+		
+		.prev {
+			left: 0;
+		}
+
+		.next {
+			text-align: right; 
+			right: 0;
+		}
+	}
+	
+	.pager {
+		.clearfix;
+		border-top: 1px solid #efefef;
+		position: relative;
+		color: #a6a6a6;
+		font-family: "DINBold";
+		text-transform: uppercase;
+		padding: 10px 0;
+		font-size: 13px;
+	
+		a {
+			color: @orange;
+			text-decoration: none;
+			font-family: "Verdana";
+			font-size: 15px;
+		}
+
+		.pager-current {
+			font-weight: normal;
+		}
+
+		.pager-previous {
+			float: left;
+			margin: 0;
+			padding: 0;
+		}
+	
+		.pager-next {
+			float: right;
+			margin: 0;
+			padding: 0;
+		}
+	}
+}
+
+/*
+ * Detail Page
+ *
+*/
+
+body.node-type-post {
+
+	.node {
+
+		.view-blog {
+
+			.views-field-title {
+				color: @dark_blue;
+			}
+			
+			div.post_share {
+				width: 140px;
+				float: right;
+				margin-top: 0px;
+			}
+
+			div.views-field-field-post-date-value, div.views-field-name {
+
+			}
+
+			.view-field-field-post-image, .views-field-field-teaser-value {
+				clear: both;
+			}
+
+		}
+
+	}
+
+}
+
+.view-id-blog {
+	.list_filters {
+		.clearfix;
+		float: none;
+	}
+}
+
+.blog-image-alt{
+						color:#838383;
+						font-style: italic;
+						margin:10px 0 15px 0;
+					}

@@ -1,0 +1,12 @@
+diff --git a/includes/menu.inc b/includes/menu.inc
+index 40e4152..75b8fc5 100644
+--- a/includes/menu.inc
++++ b/includes/menu.inc
+@@ -721,6 +721,7 @@ function menu_tree($menu_name = 'navigation') {
+ 
+   if (!isset($menu_output[$menu_name])) {
+     $tree = menu_tree_page_data($menu_name);
++    $tree = module_invoke_all('menu_tree_alter',$tree, $menu_name);
+     $menu_output[$menu_name] = menu_tree_output($tree);
+   }
+   return $menu_output[$menu_name];

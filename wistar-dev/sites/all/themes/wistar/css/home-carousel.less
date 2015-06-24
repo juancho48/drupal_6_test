@@ -1,0 +1,141 @@
+#home_masthead_carousel_container {
+	height: 396px;
+	margin: 0 auto;
+	width: 100%;
+	overflow: hidden;
+	.clearfix;
+
+	.sliver {
+		top: 0;
+		position: absolute;
+		display: none;
+	}
+	
+	.sliver_left {
+		margin-left: -1260px;
+	}
+
+	.sliver_right {
+		margin-left: 1260px;
+	}
+
+	#home_masthead_carousel_elements {
+		.statically_centered(-630px);
+		overflow: visible!important;
+		margin: 0 auto;
+		height: 396px;
+		width: 1260px;
+		border-left: 1px solid #444444;
+		border-right: 1px solid #444444;
+		
+		#home_masthead_carousel {
+			/* HACK: prevent images from rendering outside of their container before js init */
+			width: 100000px;
+			
+			li {
+				float: left;
+				width: 1260px;
+				height: 396px;
+				position: relative;	
+				
+				.image {
+					position: absolute;					
+					top: 0;
+				}
+				
+				.overlay_contents {
+					display: none;
+					visibility: none;
+					height: 0;
+					text-indent: -9999px;
+				}			
+			}			
+		}
+		
+		.slide_body_container {
+			width: 268px;
+			height: 388px;
+			border: 4px solid #262e3a;
+			background: rgba(21,40,63,0.9);						
+			position: absolute;
+			right: 140px;
+			top: 0;
+			z-index: 5;
+
+			.slide_body_elements {
+				opacity: 0.0;												
+				padding: 35px 10px 40px 25px;
+
+				h1 {
+					font-size: 34px;
+					color: #FFFFFF;
+					line-height: 37px;
+					font-family: "DINMedium";
+					text-transform: uppercase;
+					margin-bottom: 15px;
+				}
+			
+				p {
+					font-size: 17px;
+					color: #7bb7c6;
+					font-family: "DINMedium";
+					line-height: 21px;
+
+					.more {
+						display: block;
+						margin-top: 7px;
+
+						.more_arrow {
+							color: @teal;
+							font-weight: bold;
+						}
+					}
+				}
+			}
+								
+			.indicators {
+				position: absolute;
+				bottom: 0;
+				
+				a {
+					opacity: 0.6;
+					display: block;
+					height: 5px;
+					background: #EDEDED;
+					width: 65px;
+					float: left;
+					margin-right: 2px;
+					text-decoration: none;
+				} 
+				
+				a.inactive {
+					margin-top: 5px;
+				}
+				
+				a.active {
+					height: 10px;
+					background: @teal;
+				}						
+			}
+		}				
+	}
+	
+	.arrow {
+		height: 86px;
+		width: 39px;
+		position: absolute;
+		z-index: 20;
+		cursor: pointer;
+		top: 255px;
+	}
+
+	.next {
+		background: url('../images/layout/masthead_slider_arrow-right.png') transparent 0 0 no-repeat; 
+		right: 0;
+	}
+
+	.prev {
+		background: url('../images/layout/masthead_slider_arrow-left.png') transparent 0 0 no-repeat; 
+		left: 0;
+	}
+}

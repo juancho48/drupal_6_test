@@ -1,0 +1,18 @@
+diff --git a/sites/all/modules/contrib/menutrails/menutrails.module b/sites/all/modules/contrib/menutrails/menutrails.module
+index e85037f..ec7628f 100644
+--- a/sites/all/modules/contrib/menutrails/menutrails.module
++++ b/sites/all/modules/contrib/menutrails/menutrails.module
+@@ -103,11 +103,11 @@ function _menutrails_recurse_crumbs($tree, $item, &$crumbs, $above = array()) {
+     }
+     if ($menu_item['link']['link_path'] == $item['href']) {
+       foreach ($above as $trail_item) {
+-        $crumbs[] = l($trail_item['link']['link_title'], $trail_item['link']['link_path']);
++        $crumbs[] = l($trail_item['link']['link_title'], $trail_item['link']['link_path'], $trail_item['link']['localized_options']);
+       }
+       // Don't add the current page.
+       if ($menu_item['link']['link_path'] != $_GET['q']) {
+-        $crumbs[] = l($menu_item['link']['link_title'], $menu_item['link']['link_path']);
++        $crumbs[] = l($menu_item['link']['link_title'], $menu_item['link']['link_path'], $menu_item['link']['localized_options']);
+       }
+       break;
+     }

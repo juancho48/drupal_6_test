@@ -1,0 +1,157 @@
+.vertical_tab_elements {
+	.tabs {
+		.clearfix;
+		width: 150px;
+		padding: 0px 0px 10px 0;
+		float: left;
+		min-height: 100px;
+	
+		.tab_set {
+			> a {
+				font-size: 17px;
+				padding: 10px 0 10px 10px;
+				color: #111924;
+				text-decoration: none;
+				display: block;
+				font-family: "DINMedium";			
+			}
+		
+			> a.active {
+				background: #fff;
+			}
+
+			span.arrow {
+				font-size: 13px;
+				color: @teal;
+				font-family: "DINBold";
+			}
+		
+			a.back_link {
+				font-size: 13px;
+				padding: 4px;			
+				text-transform: uppercase;
+				display: inline;
+			}
+
+			ul {
+				margin: 0;
+				padding: 0;
+
+				li {
+					font-size: 14px;
+					list-style-type: none;
+					list-style-image: none;
+					margin: 0;
+					padding: 0;
+			
+					> a {
+						padding: 10px 0 10px 10px;
+						color: #111924;
+						text-decoration: none;
+						text-transform: uppercase;
+						display: block;
+						font-size: 14px;
+						font-family: "DINMedium";
+					
+					
+						:hover {
+							background: #FFFFFF;
+						}						
+					}
+							
+					/* yes I know this is bad - MD */
+					> a.active, > a.active-trail:last-child {
+						background: #FFFFFF;
+					}
+				
+					> a.header.active, > a.separator.active {
+						background: #FFFFFF;
+					}				
+				
+					> ul, > div.item-list {
+						li {
+							a {
+								font-family: "Verdana";
+								font-size: 12px;
+								text-transform: capitalize;
+								padding: 10px 5px 10px 10px;
+								line-height: 14px;
+								color: @dark_green;
+								text-decoration: none;
+								display: block;
+
+								:hover {
+									background: #FFFFFF;
+								}						
+							}
+		
+							.active, .active-trail {
+								background: #FFFFFF;
+							}
+						
+							ul {
+								display: none;
+							}
+						}
+					
+						> ul {
+							display: none;
+						}
+					
+						li.active-trail {
+
+							ul {
+								display: block;
+								background: #fff;
+								padding-bottom: 5px;
+
+								li {
+									background: url(../../images/layout/grey_right_arrow.png) no-repeat left 9px;
+									margin-left: 20px;
+									padding: 5px 0 10px 7px;
+
+									a {
+										color: #444;
+										padding: 0;
+									}
+								
+									a.active-trail {
+										font-weight: bold;
+									}
+								}							
+
+								li.active-trail {
+									background: url(../../images/layout/grey_down_arrow.png) no-repeat left 9px;
+									padding: 5px 0 10px 9px;
+								
+									ul {
+										li {
+											background: none;									
+											margin-left: 0;
+											margin-top: 6px;
+											padding: 0;
+										
+											a {
+											
+											}
+										
+											a.active {
+												font-weight: normal;
+												text-decoration: underline;
+											}
+										}
+									}
+								}							
+							}
+						}
+					}
+				}
+		
+				li.expanded, li.leaf {
+					list-style-type: none;
+					list-style-image: none;				
+				}
+			}
+		}
+	}
+}

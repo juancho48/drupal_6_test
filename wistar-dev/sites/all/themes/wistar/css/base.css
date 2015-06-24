@@ -1,0 +1,51 @@
+table {
+  width:100%;
+  font-size:11px;
+  line-height:15px;
+  margin:0px 0px 10px;
+  background-color:#fff;
+
+  border-collapse:collapse;
+  border-color:#ccc #ddd #eee;
+  border-width:1px;
+  border-style:solid;
+  }
+
+  .fieldset table { margin:0px; }
+
+table td,
+table th {
+  vertical-align:top;
+  border-width:1px 0px;
+  border-style:solid;
+  border-color:#ddd;
+  padding:5px;
+  }
+
+table th {
+  text-align:left;
+  font-weight:normal;
+  color:#666;
+  background:#eee;
+  }
+
+  table thead th { border-top-color:#ccc; }
+
+table td.active { background:#e4f0f8; }
+table tr.odd td.active { background:#ecf8fc; }
+
+table tr.selected td.active,
+table tr.selected td {
+  background:#ffc;
+  border-color:#eeb;
+  }
+
+/* Block administration */
+table tr.region td { background:#f8f8f8; }
+
+/* Hide tabledrag markers */
+table tr.draggable span.tabledrag-changed { display:none; }
+
+.tab_container {
+	margin-bottom: 13px;
+}

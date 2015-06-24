@@ -1,0 +1,99 @@
+body.node-type-landing-page {
+
+	/* GENERAL STUFF */	
+	.with_borders {
+		border-top: 3px solid @teal;
+	}
+	
+	/* MASTHEAD CAROUSEL */	
+	#landing_page_masthead_carousel_container {
+		.clearfix;
+
+		#landing_page_masthead_carousel_elements {
+			width: 976px;
+			margin-top: -13px;
+			position: relative;
+		
+			#landing_page_masthead_carousel {
+				overflow: hidden;
+				
+				li {
+					display: inline;
+
+					.callout_header {
+	
+						.callout_main_text {
+							margin-top: 13px;
+		
+							h2 {
+								color: @teal;
+							}
+			
+							p {
+								margin-bottom: 10px;
+							}	
+			
+							.more {
+								color: #fff;
+								.more_arrow {
+									color: @teal;
+								}
+							}
+
+						}	
+						
+						.callout_body {
+							right: 0;
+							top: 0;
+						}
+		
+					}	
+																		
+				}
+				
+			}
+			
+		}
+	
+		.arrow {
+			height: 86px;
+			width: 39px;
+			position: absolute;
+			z-index: 9;
+			cursor: pointer;
+			top: 167px;
+		}
+
+		.next {
+			background: url('../images/layout/masthead_slider_arrow-right.png') transparent 0 0 no-repeat; 
+			right: -27px;
+		}
+
+		.prev {
+			background: url('../images/layout/masthead_slider_arrow-left.png') transparent 0 0 no-repeat; 
+			left: -26px;
+		}
+	}	
+	
+	#main_content .content .node {
+		.section {
+	
+			p {
+				line-height: 20px;
+			}
+		
+			a {
+				color: @dark_blue;
+				text-decoration: none;	
+			}
+		}		
+	}
+	
+	.callout_container {
+		.more {
+			.more_arrow {
+				color: @orange;
+			}
+		}	
+	}
+}

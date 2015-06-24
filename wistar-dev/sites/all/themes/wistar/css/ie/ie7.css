@@ -1,0 +1,29 @@
+#quicklinks {
+	ul.menu {
+		display: none;
+		ul.menu {
+			display: none;
+		}
+	}
+}
+
+
+#wistar-donation-billing-form select {
+	border:0;
+}
+
+div.form-select-wrapper{
+	padding:6px;
+	height: 20px;
+	border: 2px solid #E7E7E7;
+    line-height: 30px;
+	margin-right: 8px;
+}
+
+#edit-middle-initial-wrapper label{
+	top:10px !important;
+}
+
+#edit-middle-initial-wrapper input{
+	width:95px !important;
+}

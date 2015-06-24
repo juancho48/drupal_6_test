@@ -1,0 +1,13 @@
+diff --git a/modules/search/search.pages.inc b/modules/search/search.pages.inc
+index 5879425..b9b2fcd 100644
+--- a/modules/search/search.pages.inc
++++ b/modules/search/search.pages.inc
+@@ -35,7 +35,7 @@ function search_view($type = 'node') {
+         $results = theme('box', t('Search results'), $results);
+       }
+       else {
+-        $results = theme('box', t('Your search yielded no results'), search_help('search#noresults', drupal_help_arg()));
++        $results = theme('box', t('Your search yielded no results'), theme('search_results', array(), $type));
+       }
+     }
+ 

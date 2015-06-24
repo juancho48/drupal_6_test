@@ -1,0 +1,4 @@
+name = "Paypal Pro Integration"
+description = "Paypal Pro Integration"
+package = "Other"
+core = 6.x

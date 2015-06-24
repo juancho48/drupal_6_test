@@ -1,0 +1,109 @@
+<?php
+/**
+ * @file
+ * wysiwyg extra module
+ */
+
+
+/**
+ * Implementation of hook_menu_alter().
+ */
+function wysiwyg_extra_menu_alter() {
+  $items['admin/settings/wysiwyg']['type'] = MENU_DEFAULT_LOCAL_TASK;
+}
+
+
+/**
+ * Implementation of hook_menu().
+ */
+function wysiwyg_extra_menu() {
+  $items = array();
+
+  $items['admin/settings/wysiwyg/extra'] = array(
+    'title' => 'Additional textareas',
+    'description' => 'Allow users to configure additional textareas',
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'wysiwyg_extra.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('wysiwyg_extra_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'weight' => 1,
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function wysiwyg_extra_form_alter(&$form, &$form_state, $form_id) {
+  $options = variable_get('wysiwyg_extra_options', array());
+
+  // Taxonomy Term settings
+  if ($form_id == 'taxonomy_form_term' && !empty($options['taxonomy_term_description'])) {
+    wysiwyg_extra_build_wysiwyg($form['identification'], 'description');
+  }
+
+  // Contact settings
+  if ($form_id == 'contact_admin_settings' && !empty($options['contact_form_information'])) {
+    wysiwyg_extra_build_wysiwyg($form, 'contact_form_information');
+  }
+
+  // Global Contact page
+  if ($form_id == 'contact_mail_page' && !empty($options['contact_form_global_message'])) {
+    wysiwyg_extra_build_wysiwyg($form, 'message');
+  }
+
+  // User Contact page
+  if ($form_id == 'contact_mail_user' && !empty($options['contact_form_user_message'])) {
+    wysiwyg_extra_build_wysiwyg($form, 'message');
+  }
+
+  // User settings
+  if ($form_id == 'user_admin_settings') {
+    if (!empty($options['user_registration_help'])) {
+      wysiwyg_extra_build_wysiwyg($form['registration'], 'user_registration_help');
+    }
+  }
+
+  // Site maintenance settings
+  if ($form_id == 'system_site_maintenance_settings') {
+    if (!empty($options['site_offline_message'])) {
+      $site_name = variable_get('site_name', '');
+      wysiwyg_extra_build_wysiwyg($form, 'site_offline_message');
+    }
+  }
+
+  // Site information settings
+  if ($form_id == 'system_site_information_settings') {
+    if (!empty($options['site_mission'])) {
+      wysiwyg_extra_build_wysiwyg($form, 'site_mission');
+    }
+
+    if (!empty($options['site_footer'])) {
+      wysiwyg_extra_build_wysiwyg($form, 'site_footer');
+    }
+  }
+}
+
+
+function wysiwyg_extra_build_wysiwyg(&$element, $name) {
+  $title = $element[$name]['#title'];
+  $default_value = $element[$name]['#default_value'];
+  $description = $element[$name]['#description'];
+  unset($element[$name]['#title']);
+  unset($element[$name]['#type']);
+  unset($element[$name]['#default_value']);
+  unset($element[$name]['#description']);
+
+  $element[$name][$name] = array(
+    '#type' => 'textarea',
+    '#title' => $title,
+    '#default_value' => $default_value,
+    '#description' => $description,
+  );
+
+  $format = variable_get($name . '_format', FILTER_FORMAT_DEFAULT);
+  $element[$name]['format'] = filter_form($format, NULL, array($name . '_format'));
+}

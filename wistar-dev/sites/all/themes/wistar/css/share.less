@@ -1,0 +1,89 @@
+.post_share {
+	.clearfix;
+	margin-top: 13px; 
+	ul {
+		li {
+			position: relative;
+			a {
+				color: #2b454b;
+				background: #f0f0f0;
+				display: block;
+				position: relative;
+				padding: 0 0 0 10px;
+				font-family: "DINMedium";
+				font-size: 14px;
+				line-height: 26px;
+				height: 26px;
+				text-decoration: none;
+
+				span {
+					position: absolute;
+					right: 0;
+					top: 0;
+					border-left: 1px solid #FFFFFF;
+					display: block;
+					background: url('../images/icons/blue_plus.jpg') 50% 50% no-repeat;
+					height: 22px;
+					width: 22px;
+					padding: 2px;
+				}
+			}
+			
+			.addthis_toolbox {
+				ul {
+					li {
+						a {
+							display: block;
+							float: none;
+						}
+					}
+				}
+			}
+			
+			ul {
+				display: none;
+				position: absolute;
+				border-top: 1px solid #FFFFFF;
+				width: 100%;
+				z-index: 20;
+
+				li {
+					padding-left: 35px;
+					
+					a {
+						padding:0 2px;
+					}
+				}
+
+				.facebook {
+					background: url('../images/icons/facebook.jpg') #f0f0f0 6px 6px no-repeat;
+				}
+
+				.twitter {
+					background: url('../images/icons/twitter.png') #f0f0f0 6px 6px no-repeat;
+				}
+				
+				.email {
+					background: url('../images/icons/email.png') #f0f0f0 6px 6px no-repeat;
+				}
+				
+				.print-this {
+					background: url('../images/icons/print.png') #f0f0f0 6px 6px no-repeat;
+					
+					a.print {
+						background-image:none;
+						padding:0 2px;
+						
+						span {
+							background:none;
+						}
+					}
+					
+					a.print:hover {
+						opacity: 0.8;
+					}
+				}
+			}								
+		}
+	}
+}

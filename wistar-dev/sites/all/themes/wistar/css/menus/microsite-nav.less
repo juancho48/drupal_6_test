@@ -1,0 +1,111 @@
+.microsite_menu_container {
+	padding-bottom: 160px;
+	
+	.microsite_menu_elements {
+		padding-top: 2px;
+		
+		ul {
+			margin: 0;
+			padding: 0;
+
+			> li {
+				list-style-type: none;
+				list-style-image: none;
+				margin: 0;
+				margin-bottom: 1px;
+				padding: 0;
+			
+				> a {
+					padding: 10px 0 10px 22px;
+					color: #FFFFFF;
+					text-decoration: none;
+					display: block;
+					font-size: 16px;
+					font-family: "DINMedium";
+					margin-bottom: 1px;
+					
+					:hover {
+						background: #08376f;					
+					}
+				}
+				
+				> a.separator {
+					cursor: default;
+					
+					:hover {
+						background: transparent;
+					}
+				}
+				
+				> a.active, > a.active-trail, a.active-trail.separator {
+					background: #08376f;				
+
+					:hover {
+						background: #08376f;				
+					}
+				}
+											
+				> ul {
+					padding: 10px 0;
+					background: #0e4a80;
+					
+					li {
+						border: 0;
+						
+						a {
+							font-family: "Verdana";
+							font-size: 12px;
+							text-transform: capitalize;
+							background: url(../../images/icons/microsite-white_arrow.jpg) transparent 22px 7px no-repeat;
+							line-height: 12px;
+							text-decoration: none;
+							font-weight: normal;
+							display: block;
+							padding: 7px 0 7px 32px;
+							letter-spacing: normal;
+							
+							:hover {
+								background: url(../../images/icons/microsite-blue_arrow.jpg) #FFFFFF 22px 7px no-repeat;;
+								color: #0e4a80;
+							}							
+						}
+		
+						.active, .active-trail {
+							background: url(../../images/icons/microsite-blue_arrow.jpg) #FFFFFF 22px 7px no-repeat;;
+							color: #0e4a80;
+							:hover {
+								background: url(../../images/icons/microsite-blue_arrow.jpg) #FFFFFF 22px 7px no-repeat;;
+								color: #0e4a80;
+							}														
+						}
+						
+						ul {
+							display: none;
+						}
+					}
+					
+					li.last {
+						border: 0;					
+					}
+				}
+			}
+		
+			> li {
+				border-top: 1px solid #30353b;
+			}
+			
+			> li.first {
+				border-top: 0;
+			}
+
+			> li.last {
+				border-bottom: 1px solid #30353b;
+			}
+		
+			> li.expanded, li.leaf {
+				list-style-type: none;
+				list-style-image: none;				
+			}
+		}	
+	}
+}

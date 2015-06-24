@@ -1,0 +1,99 @@
+<?php
+
+/**
+ * implementation of hook_menu
+ */	
+function wistar_paypal_menu() {
+	$items = array();
+			
+	$items['paypal/ipn/listen'] = array(
+		'title' => '',
+		'page callback' => 'wistar_paypal_ipn_listener',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK
+	);
+		
+	return $items;
+}
+
+
+/**
+ * Paypal IPN listener
+ */
+function wistar_paypal_ipn_listener() {	
+	
+	include(dirname(__FILE__) . '/IpnListener.php');
+
+	$listener = new IpnListener();
+	//$listener->use_sandbox = variable_get('paypal_standard_sandbox_enabled', true);
+
+	$update = false;
+
+	//wistar_log($_REQUEST);
+
+	try {
+		$verified = $listener->processIpn();
+	} 
+	catch (Exception $e) {
+		watchdog('wistar_paypal', 'IPN listener exception: ' . $e->getMessage());
+	}
+
+	if ($verified) {		
+		$update = null;
+		if(isset($_REQUEST['item_number']) && is_numeric($_REQUEST['item_number'])) {
+			$node = node_load($_REQUEST['item_number']);
+			// store the transaction_id if we dont have one
+			if(isset($_REQUEST['txn_id']) && !isset($node->field_transaction_id[0]['value'])) {
+				$node->field_transaction_id[0]['value'] = $_REQUEST['txn_id'];
+			}
+
+			//wistar_log('loaded by item number');			
+		}
+		
+		// TODO flow here is messy
+		// dont load by txn_id if we already loaded by item_number
+		if(!$node && isset($_REQUEST['txn_id'])) {
+			$txn_id = $_REQUEST['txn_id'];
+			$node = wistar_paypal_load_by_txn_id($txn_id);
+			//wistar_log('loaded by txn');
+		}
+
+		if($node) {
+			wistar_paypal_node_ipn_update($node);			
+		}
+		else {
+			watchdog('wistar_paypal', 'Could not load node associated with IPN data', $_REQUEST);			
+		}
+	} 
+	else {
+		watchdog('wistar_paypal', 'IPN not verified', $_REQUEST);
+	}	
+}
+
+/**
+ * helper function for calling the ipn update for a node
+ */
+function wistar_paypal_node_ipn_update(&$node) {
+	if(isset($node->type)) {
+		$func = 'wistar_' . $node->type .'_ipn_update';
+		if(function_exists($func)) {
+			return $func($node);
+		}
+	}
+}
+
+/**
+ * helper function for loading a  node by transaction ID
+ */
+function wistar_paypal_load_by_txn_id($txn_id) {
+	$field = content_database_info(content_fields('field_transaction_id'));
+	$table = $field['table'];
+	$column = $field['columns']['value']['column'];
+	
+	$nid = db_result(db_query('SELECT vid from {%s} WHERE {%s} = "%s"', $table, $column, $txn_id));
+	if($nid && is_numeric($nid) && $node = node_load($nid)) {
+		return $node;
+	}
+	
+	return null;
+}

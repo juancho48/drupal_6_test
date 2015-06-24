@@ -1,0 +1,47 @@
+<?php
+
+/**
+ * Implements hook_block()
+ * Defines blocks
+ * @param string operation (list, view, save, configure)
+ * @param int block id
+ * @param array (only for save operation)
+ */
+function wistar_scientists_block($op = 'list', $delta = 0, $edit = array()) {
+	$block = array();
+	switch ($op) {
+		case 'list':
+			$block[0]['info'] = t('Find a Scientist');
+			$block[0]['cache'] = BLOCK_NO_CACHE;
+		break;
+		case 'view':
+			$block['subject'] = 'Find a Scientist';
+			$block['content'] = _wistar_scientists_block_content();
+		break;
+	}
+	return $block;
+}
+
+
+/**
+ * Builds HTML string for block content
+ * returns string 
+ */
+function _wistar_scientists_block_content() {
+	$result = db_query(
+		'SELECT DISTINCT n.nid, n.title FROM {node} n LEFT JOIN {content_field_last_name} l ON l.nid = n.nid WHERE n.type = "%s" AND n.status = 1 ORDER BY l.field_last_name_value',
+		'scientist'
+	);
+	$count = 0;
+	$output = '<ul class="menu">';
+	while ($row = db_fetch_array($result)) {
+		$output .= '<li class="leaf">' . l($row['title'], 'node/'.$row['nid']) .'</li>';
+		$count++;
+		if ($count % 8 === 0) {
+			$output .= '</ul><ul class="menu">';
+		}
+	}
+	$output .= '</ul>';
+	
+	return $output;
+}

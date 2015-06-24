@@ -1,0 +1,129 @@
+diff --git a/sites/all/modules/wistar_theme/wistar_theme.module b/sites/all/modules/wistar_theme/wistar_theme.module
+index 6e4cec2..1f84b27 100644
+--- a/sites/all/modules/wistar_theme/wistar_theme.module
++++ b/sites/all/modules/wistar_theme/wistar_theme.module
+@@ -108,7 +108,8 @@ function wistar_theme_theme() {
+ 			'type' => 'theme',
+ 			'template' => 'wistar-vertical-tabs',
+ 			'arguments' => array(
+-				'bid' => null
++				'bid' => null,
++				'use_accordion' => true
+ 			)	
+ 		),
+ 		'wistar_vertical_tabs_custom' => array(
+diff --git a/sites/all/themes/wistar/css/menus/vertical-tabs.less b/sites/all/themes/wistar/css/menus/vertical-tabs.less
+index e6ecd67..a4b2020 100644
+--- a/sites/all/themes/wistar/css/menus/vertical-tabs.less
++++ b/sites/all/themes/wistar/css/menus/vertical-tabs.less
+@@ -113,5 +113,29 @@
+ 			}
+ 		}
+ 	}
++	
++	.tab_set.with_accordion {
++		ul {
++			> li.expanded {
++				> a {
++					display: block;
++				}
++				> ul {
++					display: none;
++					padding-bottom: 1px;
++					.clearfix;
++				}
++			}
++
++			> li.active-trail {
++				list-style-type: none;
++				list-style-image: none;
++
++				> ul {
++					display: block;
++				}				
++			}		
++		}		
++	}
+ }
+ 
+diff --git a/sites/all/themes/wistar/js/application.js b/sites/all/themes/wistar/js/application.js
+index 8b1d5f3..d7ab7c9 100755
+--- a/sites/all/themes/wistar/js/application.js
++++ b/sites/all/themes/wistar/js/application.js
+@@ -69,13 +69,6 @@ $(function() {
+ 		return false;
+ 	});	
+ 	
+-	// block clicking on header links in vertical tabs
+-	// and breadcrumbs
+-	$('.tab_set a.header, .breadcrumb a.header').click(function(e) {
+-		e.preventDefault();
+-		return false;
+-	});
+-	
+ 	$('.callout_container.set_of_3 .inner').makeEqualHeight();
+ });
+ 
+diff --git a/sites/all/themes/wistar/node/node-wistar_today.tpl.php b/sites/all/themes/wistar/node/node-wistar_today.tpl.php
+index 0b1c144..33b4ff6 100644
+--- a/sites/all/themes/wistar/node/node-wistar_today.tpl.php
++++ b/sites/all/themes/wistar/node/node-wistar_today.tpl.php
+@@ -2,7 +2,7 @@
+ <?php //print theme('breadcrumb', drupal_get_breadcrumb( )); ?>
+ <div class="vertical_tab_container">
+ 	<div class="vertical_tab_elements">
+-		<?php print theme('wistar_vertical_tabs');?>
++		<?php print theme('wistar_vertical_tabs', null, false);?>
+ 		<div class="content">			
+ 			<?php print theme('wistar_content_heading', $node);?>
+ 			<div id="node-<?php print $node->nid;?>" class="node">
+diff --git a/sites/all/themes/wistar/partials/layout/wistar-vertical-tabs.tpl.php b/sites/all/themes/wistar/partials/layout/wistar-vertical-tabs.tpl.php
+index 49c2829..ac25f86 100644
+--- a/sites/all/themes/wistar/partials/layout/wistar-vertical-tabs.tpl.php
++++ b/sites/all/themes/wistar/partials/layout/wistar-vertical-tabs.tpl.php
+@@ -1,9 +1,43 @@
++<script type="text/javascript">
++//<![CDATA[
++	$(function() {
++		var selector = '.tabs > .tab_set > div > .menu > li.expanded';
++		var $scope = $(selector);
++		var $handles = $(selector + ' > a');
++		
++		// apply the open class to the active-trail
++		$('.with_accordion > div > ul > li.active-trail > ul').addClass('open');
++		// store the height of each ul for later use
++
++		$('.with_accordion > div > ul > li > ul').each(function(e) {
++			//$(this).css('height', $(this).height());
++		});
++		
++		
++		$handles.click(function(e){
++			e.preventDefault();
++			var $ul = $(this).next('ul');
++			
++			if( !($('.open', $scope).length > 0 && $ul.hasClass('open')) ) {
++	
++				// close others
++				$('.open', $scope).each(function(){
++					$(this).removeClass('open');
++					$(this).slideUp(100);
++				});
++
++				$ul.addClass('open');
++				$ul.slideDown(100);
++			}
++		});	
++	});
++//]]>
++</script>
+ <div class="tabs">
+ 	<?php $bid = $bid ? $bid : WISTAR_MENU_BLOCK_ID;?>
+ 	<?php $menu = module_invoke('menu_block', 'block', 'view', $bid); ?>
+-	<div class="tab_set">
++	<div class="tab_set<?php if($use_accordion):?> with_accordion<?php endif;?>">
+ 		<?php print $menu['subject'];?>
+ 		<?php print $menu['content'];?>
+ 	</div>			
+ </div>
+-
